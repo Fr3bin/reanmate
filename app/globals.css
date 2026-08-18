@@ -1,0 +1,282 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #006766;
+  --color-primary-dark: #004f4e;
+  --color-primary-light: #e3f1f0;
+  --color-gold: #e6a23c;
+  --color-cta: #f26b6b;
+  --color-cta-dark: #d95555;
+  --color-section: #fff0f0;
+  --color-surface: #ffffff;
+  --color-bg: #f7f8f8;
+  --color-ink: #1f2933;
+  --color-ink-muted: #5c6b73;
+  --color-success: #2f9e44;
+  --color-success-soft: #e6f6ea;
+  --color-error: #e03131;
+  --color-error-soft: #fdecec;
+  --color-line: #e2e8f0;
+
+  --font-sans: var(--font-khmer), "Noto Sans Khmer", sans-serif;
+  --font-display: var(--font-khmer-display), var(--font-khmer), serif;
+}
+
+html {
+  background: var(--color-bg);
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  /* Khmer script needs generous line height for stacked diacritics */
+  line-height: 1.9;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.7;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* Landing: floating preview card + mascot */
+@keyframes landing-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-16px);
+  }
+}
+
+@keyframes landing-float-mascot {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-22px) rotate(2deg);
+  }
+}
+
+@keyframes landing-shadow {
+  0%,
+  100% {
+    transform: translateX(-50%) scaleX(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateX(-50%) scaleX(0.78);
+    opacity: 0.28;
+  }
+}
+
+@keyframes landing-chip {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--chip-rot, 0deg));
+  }
+  50% {
+    transform: translateY(var(--chip-lift, -8px)) rotate(var(--chip-rot-end, 0deg));
+  }
+}
+
+.landing-float-wrap {
+  position: relative;
+  padding: 0.5rem 0 1.25rem;
+  overflow: visible;
+}
+
+.landing-hero-stage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.landing-card-col {
+  position: relative;
+  width: 100%;
+}
+
+.landing-float {
+  position: relative;
+  z-index: 2;
+  animation: landing-float 4.8s ease-in-out infinite;
+  will-change: transform;
+  filter: drop-shadow(0 28px 40px rgba(0, 0, 0, 0.4))
+    drop-shadow(0 10px 16px rgba(0, 40, 40, 0.25));
+}
+
+.landing-float-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -0.35rem;
+  z-index: 0;
+  width: 78%;
+  height: 20px;
+  border-radius: 9999px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.65) 0%,
+    rgba(0, 0, 0, 0) 72%
+  );
+  filter: blur(5px);
+  animation: landing-shadow 4.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.landing-mascot {
+  position: relative;
+  z-index: 3;
+  flex: 0 0 auto;
+  width: 88px;
+  margin-bottom: -1rem;
+  pointer-events: none;
+  animation: landing-float-mascot 5.4s ease-in-out infinite;
+  will-change: transform;
+  filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.45));
+}
+
+@media (min-width: 640px) {
+  .landing-mascot {
+    width: 140px;
+    margin-bottom: -1.15rem;
+  }
+}
+
+.landing-chip {
+  position: absolute;
+  z-index: 4;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.25),
+    0 2px 5px rgba(0, 0, 0, 0.14);
+  will-change: transform;
+}
+
+/* Mid-left edge of the card */
+.landing-chip-a {
+  top: 50%;
+  left: -0.85rem;
+  background: #f26b6b;
+  color: #fff;
+  animation: landing-chip-a-float 4.4s ease-in-out infinite;
+}
+
+@keyframes landing-chip-a-float {
+  0%,
+  100% {
+    transform: translateY(-50%) rotate(-6deg);
+  }
+  50% {
+    transform: translateY(calc(-50% - 8px)) rotate(-2deg);
+  }
+}
+
+/* Mid-right edge — same level as និទ្ទេស A */
+.landing-chip-emc {
+  top: 50%;
+  right: -0.85rem;
+  background: #e6a23c;
+  color: #004f4e;
+  animation: landing-chip-emc-float 5s ease-in-out infinite;
+  animation-delay: 0.35s;
+}
+
+@keyframes landing-chip-emc-float {
+  0%,
+  100% {
+    transform: translateY(-50%) rotate(6deg);
+  }
+  50% {
+    transform: translateY(calc(-50% - 8px)) rotate(2deg);
+  }
+}
+
+/* Lower area of card */
+.landing-chip-sqrt {
+  bottom: 1.35rem;
+  left: 50%;
+  background: #ffffff;
+  color: #006766;
+  animation: landing-chip 4.6s ease-in-out infinite;
+  animation-delay: 0.7s;
+  --chip-rot: 4deg;
+  --chip-rot-end: 8deg;
+  --chip-lift: -7px;
+  /* keep centered under card without conflicting with side chips */
+  margin-left: -1.1rem;
+}
+
+@media (min-width: 1024px) {
+  .landing-float-wrap {
+    padding: 2.5rem 2.75rem 2rem 1.25rem;
+  }
+
+  .landing-hero-stage {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 0;
+  }
+
+  .landing-card-col {
+    flex: 0 0 auto;
+    width: 400px;
+  }
+
+  .landing-mascot {
+    width: 230px;
+    margin-bottom: 0.45rem;
+    margin-right: -0.55rem;
+  }
+
+  .landing-chip {
+    display: inline-flex;
+  }
+
+  .landing-chip-a {
+    left: -0.95rem;
+  }
+
+  .landing-chip-emc {
+    right: -0.95rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-float,
+  .landing-float-shadow,
+  .landing-mascot,
+  .landing-chip {
+    animation: none;
+  }
+
+  .landing-chip-a {
+    transform: translateY(-50%) rotate(-6deg);
+  }
+
+  .landing-chip-emc {
+    transform: translateY(-50%) rotate(6deg);
+  }
+}
