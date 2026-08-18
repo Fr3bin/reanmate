@@ -14,6 +14,7 @@ export default function Header({ gradeLabel }: { gradeLabel?: string }) {
       homeHref={isAdmin ? "/admin" : "/home"}
       gradeLabel={gradeLabel}
       isAdmin={isAdmin}
+      homeActive={!isAdmin && pathname === "/home"}
     />
   );
 }

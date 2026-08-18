@@ -57,7 +57,7 @@ export function getAllChapters(): Chapter[] {
 }
 
 /**
- * POST /chapters/:id/messages — mock tutor reply.
+ * POST /chapters/:id/messages — mock study-buddy reply.
  * Picks a keyword-matched canned reply, otherwise rotates fallbacks.
  */
 export function getMockTutorReply(userMessage: string, messageCount: number): string {

@@ -6,8 +6,8 @@ export default function PageTitle({
   className?: string;
 }) {
   return (
-    <div className={`rounded-xl bg-section px-4 py-2.5 ${className}`}>
-      <h1 className="font-[family-name:var(--font-display)] text-xl font-bold text-primary">
+    <div className={`border-l-[3px] border-gold pl-4 ${className}`}>
+      <h1 className="text-xl font-bold text-primary sm:text-2xl">
         {children}
       </h1>
     </div>

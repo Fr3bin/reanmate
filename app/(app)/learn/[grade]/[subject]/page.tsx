@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import BackLink from "@/components/BackLink";
 import Breadcrumb from "@/components/Breadcrumb";
 import ChapterCard from "@/components/ChapterCard";
 import EmptyState from "@/components/EmptyState";
@@ -24,13 +25,19 @@ export default async function SubjectPage({
 
   return (
     <div>
-      <Breadcrumb
-        items={[
-          { href: "/home", label: "ទំព័រដើម" },
-          { href: `/learn/${grade}`, label: `ថ្នាក់ទី${toKhmerNumber(grade)}` },
-          { label: subject.nameKm },
-        ]}
+      <BackLink
+        href={`/learn/${grade}`}
+        label={`ត្រឡប់ទៅថ្នាក់ទី${toKhmerNumber(grade)}`}
       />
+      <div className="mt-1 hidden sm:block">
+        <Breadcrumb
+          items={[
+            { href: "/home", label: "ទំព័រដើម" },
+            { href: `/learn/${grade}`, label: `ថ្នាក់ទី${toKhmerNumber(grade)}` },
+            { label: subject.nameKm },
+          ]}
+        />
+      </div>
 
       <PageTitle className="mt-4">
         {subject.nameKm} — ថ្នាក់ទី{toKhmerNumber(grade)}
@@ -40,11 +47,13 @@ export default async function SubjectPage({
         <div className="mt-6">
           <EmptyState
             title="មេរៀននឹងមកដល់ឆាប់ៗ"
-            body={`មេរៀន${subject.nameKm}សម្រាប់ថ្នាក់ទី${toKhmerNumber(grade)} កំពុងរៀបចំ។ សូមត្រឡប់មកម្តងទៀតនៅពេលក្រោយ។`}
+            body={`មេរៀន${subject.nameKm}សម្រាប់ថ្នាក់ទី${toKhmerNumber(grade)} កំពុងរៀបចំ។`}
+            actionHref={`/learn/${grade}`}
+            actionLabel={`ត្រឡប់ទៅថ្នាក់ទី${toKhmerNumber(grade)}`}
           />
         </div>
       ) : (
-        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="stagger mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {chapters.map((chapter) => (
             <ChapterCard key={chapter.id} chapter={chapter} />
           ))}

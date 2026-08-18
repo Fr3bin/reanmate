@@ -16,35 +16,30 @@ export default function ChapterCard({ chapter }: { chapter: Chapter }) {
   return (
     <Link
       href={`/learn/${chapter.grade}/${chapter.subject}/${chapter.id}`}
-      className="group overflow-hidden rounded-2xl border border-line bg-surface shadow-sm transition hover:border-primary hover:shadow-md"
+      className="ui-card group overflow-hidden"
     >
-      {/* Subject-colored thumbnail placeholder until real images exist */}
-      <div
-        className={`flex aspect-[16/7] items-center justify-center text-4xl font-black ${
-          chapter.subject === "math"
-            ? "bg-primary-light text-primary"
-            : "bg-section text-cta"
-        }`}
-      >
-        {chapter.subject === "math" ? "∑" : "🏛"}
+      <div className="relative flex aspect-[16/8] items-end bg-primary-dark px-4 py-3">
+        {completed ? (
+          <span className="absolute left-4 top-4 rounded-full bg-success px-2.5 py-0.5 text-[10px] font-semibold text-white">
+            បានបញ្ចប់
+          </span>
+        ) : null}
+        <span className="absolute right-4 top-4 text-4xl text-white/12">
+          {chapter.subject === "math" ? "គ" : "ប"}
+        </span>
+        <p className="text-xs font-semibold text-gold">មេរៀនទី{toKhmerNumber(chapter.sortOrder)}</p>
       </div>
 
       <div className="p-4">
-        <p className="text-sm text-ink-muted">មេរៀនទី{toKhmerNumber(chapter.sortOrder)}</p>
-        <h3 className="mt-1 text-lg font-bold text-ink group-hover:text-primary">
+        <h3 className="text-lg font-semibold text-ink group-hover:text-primary">
           {chapter.title}
         </h3>
-        <div className="mt-3">
-          {completed ? (
-            <span className="inline-block rounded-full bg-success-soft px-3 py-1 text-xs font-bold text-success">
-              ✓ បានបញ្ចប់
-            </span>
-          ) : (
-            <span className="inline-block rounded-full bg-bg px-3 py-1 text-xs font-medium text-ink-muted">
-              មិនទាន់បញ្ចប់
-            </span>
-          )}
-        </div>
+        <p className="mt-1 text-xs text-ink-muted">
+          វីដេអូ · AI · តេស្ត {toKhmerNumber(chapter.questions.length)} សំណួរ
+        </p>
+        <p className={`mt-3 text-sm font-semibold ${completed ? "text-success" : "text-cta"}`}>
+          {completed ? "មើលម្តងទៀត →" : "ចូលរៀន →"}
+        </p>
       </div>
     </Link>
   );

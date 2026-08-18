@@ -1,4 +1,4 @@
-# AI Tutor — API Contract (Frontend ⇄ Node.js/MongoDB Backend)
+# ReanMate — API Contract (Frontend ⇄ Node.js/MongoDB Backend)
 
 This document defines the HTTP API the backend team should implement.
 The frontend currently runs fully on mock data; every mock function in
@@ -50,7 +50,7 @@ Questions include `correctIndex` + `explanation` because the quiz gives
 immediate client-side feedback. If we later care about answer leaking, we can
 split into a `/check` endpoint — not needed for demo.
 
-## 3. Tutor chat
+## 3. ReanMate chat (study buddy)
 
 | Method | Path | Body | Response |
 |--------|------|------|----------|
@@ -60,7 +60,8 @@ split into a `/check` endpoint — not needed for demo.
 Backend responsibilities on POST:
 
 1. Store the user message.
-2. Call the AI provider (server-side key) with a Khmer tutor system prompt,
+2. Call the AI provider (server-side key) with a Khmer **study-buddy** system prompt
+   (មិត្ត AI — peer helper, not a teacher),
    grounded in the chapter's `sourceText` + `summary`. Instruct the model to
    admit when the answer is not in the material.
 3. Store and return the assistant message.
@@ -110,5 +111,5 @@ chapter's `sourceText`**. Admin edits then approves via PATCH.
 | `lib/api/index.ts` reads `content/*.json` | `fetch` calls to the endpoints above |
 | `lib/progress.ts` localStorage | `/me/progress`, `/chapters/:id/messages` |
 | Login skip buttons | real `/auth/login` + token storage |
-| Canned tutor replies | real AI reply from POST `/messages` |
+| Canned ReanMate replies | real AI reply from POST `/messages` |
 | `generateChapterContent()` fake delay | real POST `/admin/chapters/:id/generate` |

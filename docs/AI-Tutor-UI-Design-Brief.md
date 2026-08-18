@@ -1,10 +1,10 @@
-# AI Tutor — UI / UX Design Brief
+# ReanMate — UI / UX Design Brief
 
 | Field | Value |
 |-------|--------|
 | Version | 1.0 |
 | Status | Draft (alongside SRS) |
-| Product | AI Tutor |
+| Product | ReanMate |
 | Language (UI) | Khmer only |
 | Related doc | [AI-Tutor-SRS.md](./AI-Tutor-SRS.md) |
 
@@ -15,7 +15,7 @@
 ## 1. Design goals
 
 1. Feel **familiar to Cambodian school / MoEYS-style learning**, without cloning the MoEYS site.
-2. Make the study loop obvious: **Watch video → Ask AI Tutor → Take quiz**.
+2. Make the study loop obvious: **Watch video → Ask ReanMate → Take quiz**.
 3. Stay **readable in Khmer** (larger type, comfortable line spacing).
 4. Work **anywhere** on phone, tablet, and desktop (responsive).
 5. Keep trust visible: **MoEYS credit** under video + **AI disclaimer** in the footer of learn pages.
@@ -26,9 +26,9 @@
 
 | Aspect | Decision |
 |--------|----------|
-| Mood | Clean academic / school |
+| Mood | Clean academic + study buddy (peer, not teacher) |
 | Inspiration | MoEYS e-learning palette (colors only, not full layout clone) |
-| Logo | Provided by owner (text fallback “AI Tutor” until then) |
+| Logo | Provided by owner (text fallback “ReanMate” until then) |
 | Density | Comfortable, not cramped |
 
 ### 2.1 Color palette (CSS variables)
@@ -92,7 +92,7 @@ App (authenticated)
 ### 3.2 Footer (learn pages)
 
 - AI disclaimer (persistent on learn-related pages):  
-  *“AI Tutor can make mistakes. MoEYS videos and the official textbook are the authority. Verify important answers.”*  
+  *“ReanMate can make mistakes. MoEYS videos and the official textbook are the authority. Verify important answers.”*  
   (Khmer translation at implementation.)
 
 ---
@@ -106,7 +106,7 @@ App (authenticated)
 - Hero with product name / logo  
 - One clear headline + short supporting line (Khmer)  
 - Primary CTAs: Sign up / Log in (coral)  
-- Visual mock or illustration of the **chapter study page** (video + tutor)  
+- Visual mock or illustration of the **chapter study page** (video + ReanMate)  
 - Keep first viewport focused: brand, headline, support line, CTAs, one dominant visual — avoid cluttered stats rows
 
 ### 4.2 Home (after login)
@@ -127,7 +127,7 @@ App (authenticated)
 
 | Left | Right |
 |------|--------|
-| MoEYS video embed | AI Tutor chat (always visible column) |
+| MoEYS video embed | ReanMate chat (always visible column) |
 | Credit **directly under video** | Listen control on messages |
 | Summary / key points under video | |
 
@@ -139,7 +139,7 @@ App (authenticated)
 1. Video  
 2. MoEYS credit under video  
 3. Summary  
-4. Chat entry → **slide-over drawer** for tutor  
+4. Chat entry → **slide-over drawer** for ReanMate  
 5. Quiz button  
 
 Stack order: **Video → Summary → Chat → Quiz**.
@@ -165,7 +165,7 @@ Stack order: **Video → Summary → Chat → Quiz**.
 |---------|----------|
 | Listen | Icon + label **ស្តាប់** on each AI message; browser TTS (`km-KH`); graceful message if unavailable |
 | Chat history | Per chapter, persisted; desktop column / mobile drawer |
-| MoEYS credit | Directly under embed; never imply AI Tutor owns MoEYS content |
+| MoEYS credit | Directly under embed; never imply ReanMate owns MoEYS content |
 | Chapter complete | ≥ 70% on an attempt; banner + next chapter suggestion |
 | Loading | Prefer calm skeleton or labeled loading for AI; empty states use illustration + short Khmer text |
 

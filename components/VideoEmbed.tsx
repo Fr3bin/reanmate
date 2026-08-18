@@ -8,24 +8,29 @@ export default function VideoEmbed({
   title: string;
 }) {
   return (
-    <div>
+    <div id="lesson-video" className="ui-card overflow-hidden">
       {embedUrl ? (
         <iframe
           src={embedUrl}
           title={title}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
-          className="aspect-video w-full rounded-xl border border-line bg-black"
+          className="aspect-video w-full bg-black"
         />
       ) : (
-        <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-xl bg-primary-dark text-white">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gold text-2xl text-primary-dark">
-            ▶
-          </span>
-          <p className="text-sm text-white/80">វីដេអូមេរៀន MoEYS នឹងបង្ហាញនៅទីនេះ</p>
+        <div className="relative flex aspect-video w-full flex-col items-center justify-center overflow-hidden bg-primary-dark px-5 text-white">
+          <p className="absolute left-4 top-4 rounded-full bg-black/25 px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-gold">
+            MoEYS
+          </p>
+          <p className="max-w-xs text-center text-sm font-medium leading-relaxed">{title}</p>
+          <p className="mt-2 max-w-xs text-center text-xs leading-relaxed text-white/55">
+            វីដេអូមេរៀនផ្លូវការនឹងបង្ហាញនៅទីនេះ។ សូមអានសង្ខេបខាងក្រោមជាមុនសិន។
+          </p>
         </div>
       )}
-      <p className="mt-2 text-xs text-ink-muted">{credit}</p>
+      <p className="border-t border-line px-4 py-2.5 text-xs leading-relaxed text-ink-muted">
+        {credit}
+      </p>
     </div>
   );
 }

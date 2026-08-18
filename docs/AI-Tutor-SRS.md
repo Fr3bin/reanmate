@@ -1,10 +1,10 @@
 # Software Requirements Specification (SRS)
 
-## AI Tutor
+## ReanMate
 
 | Field | Value |
 |-------|--------|
-| Document title | Software Requirements Specification — AI Tutor |
+| Document title | Software Requirements Specification — ReanMate |
 | Version | 1.0 |
 | Language | English |
 | Status | Draft for internship mentor review |
@@ -22,7 +22,7 @@
 
 ### 1.1 Purpose
 
-This Software Requirements Specification (SRS) defines the functional and non-functional requirements for **AI Tutor**, a web application that helps Cambodian upper-secondary students learn **Mathematics** and **History** in Khmer, using Ministry-aligned lesson structure, MoEYS teaching videos, an AI tutor with voice playback, and quizzes with explanations.
+This Software Requirements Specification (SRS) defines the functional and non-functional requirements for **ReanMate**, a web application that helps Cambodian upper-secondary students learn **Mathematics** and **History** in Khmer, using Ministry-aligned lesson structure, MoEYS teaching videos, an AI study buddy (មិត្ត AI) with voice playback, and quizzes with explanations.
 
 This document is intended for:
 
@@ -37,7 +37,7 @@ This document is intended for:
 - Grades **10, 11, and 12**
 - Subjects: **Mathematics** and **History** (content and AI responses in **Khmer**)
 - Content volume target: **3 chapters per subject per grade** → **18 chapters total**
-- Per chapter: MoEYS video embed with credit, AI-generated summary (admin-approved), AI tutor chat, MCQ quiz
+- Per chapter: MoEYS video embed with credit, AI-generated summary (admin-approved), ReanMate (មិត្ត AI) chat, MCQ quiz
 - Roles: **Student** and **Admin** only
 - Hosting: **Vercel** (application) + **Supabase** (auth and database)
 - Deployment purpose: **demo** (not large-scale production)
@@ -58,7 +58,7 @@ This document is intended for:
 | Term | Meaning |
 |------|---------|
 | MoEYS | Ministry of Education, Youth and Sport (Cambodia) |
-| AI Tutor | This product; also the in-app conversational tutor |
+| ReanMate | This product; the in-app conversational study buddy (មិត្ត AI), not a teacher |
 | MCQ | Multiple-choice question |
 | RLS | Row Level Security (Supabase/Postgres) |
 | TTS | Text-to-speech |
@@ -82,23 +82,23 @@ Section 2 describes the product and users. Section 3 lists functional requiremen
 
 ### 2.1 Product perspective
 
-AI Tutor is a new standalone web system. It complements (does not replace) MoEYS videos and official textbooks:
+ReanMate is a new standalone web system. It complements (does not replace) MoEYS videos and official textbooks:
 
 1. Student watches the **MoEYS lesson video** (embedded in the app, with credit to the original source).
-2. Student asks the **AI Tutor** for personal explanation in Khmer (optional **Listen** via browser TTS).
+2. Student asks the **ReanMate** for personal explanation in Khmer (optional **Listen** via browser TTS).
 3. Student takes an **MCQ quiz**; the system explains why answers are correct.
 4. Progress is saved when the student achieves a passing quiz score.
 
 ```text
-[Student device] → [AI Tutor on Vercel]
+[Student device] → [ReanMate on Vercel]
                         ├─ Supabase (Auth, DB)
-                        ├─ AI provider API (tutor + content generation)
+                        ├─ AI provider API (study-buddy chat + content generation)
                         └─ MoEYS video embed (third-party content)
 ```
 
 ### 2.2 Problem statement
 
-After watching MoEYS teaching videos, many students still lack **personal, on-demand explanation** tailored to their questions. AI Tutor addresses that gap while keeping learning aligned to textbook chapters and official video lessons.
+After watching MoEYS teaching videos, many students still lack **personal, on-demand explanation** tailored to their questions. ReanMate addresses that gap while keeping learning aligned to textbook chapters and official video lessons.
 
 ### 2.3 Product functions (summary)
 
@@ -106,7 +106,7 @@ After watching MoEYS teaching videos, many students still lack **personal, on-de
 |------|-----------|
 | Account | Self sign-up, sign-in, sign-out; admin password reset (manual) |
 | Browse | Select grade (10–12) → subject (Math/History) → chapter list |
-| Learn | View MoEYS embed + credit, read chapter summary, chat with AI tutor, Listen |
+| Learn | View MoEYS embed + credit, read chapter summary, chat with ReanMate (មិត្ត AI), Listen |
 | Practice | Take MCQ quiz (5–10 questions), immediate feedback + explanation, retry |
 | Progress | Mark chapter complete when quiz score ≥ 70% (on a successful attempt) |
 | Admin | Create chapters, paste source text, set MoEYS URL/credit, AI-generate summary + MCQs, edit, approve/unapprove |
@@ -116,7 +116,7 @@ After watching MoEYS teaching videos, many students still lack **personal, on-de
 
 | Role | Description | Count (demo) |
 |------|-------------|----------------|
-| Student | Learns via video, tutor, quiz; accesses from any personal device | Small demo group |
+| Student | Learns via video, study buddy chat, quiz; accesses from any personal device | Small demo group |
 | Admin | Manages content and approval; single operator for demo | 1 |
 
 No teacher, parent, or school-admin roles in this version.
@@ -138,7 +138,7 @@ No teacher, parent, or school-admin roles in this version.
 - AI keys only on the server; provider abstracted so Gemini/OpenAI (or similar) can be swapped
 - MoEYS content remains owned by the original source; app must show **credit** and use allowed embed
 - Demo scale only; no school privacy policy mandated for this internship demo (still minimize collected data)
-- Temporary product name: **AI Tutor** (final brand name TBD)
+- Product name: **ReanMate** (study buddy / មិត្ត AI)
 
 ### 2.7 Assumptions and dependencies
 
@@ -178,15 +178,15 @@ Requirements use IDs for traceability (e.g. FR-AUTH-01).
 | FR-CH-01 | A chapter page shall display an **embedded MoEYS teaching video** when a valid embed URL is configured. |
 | FR-CH-02 | Adjacent to the video, the system shall display **credit / attribution** to MoEYS (or the official source) and that the content is original to them. |
 | FR-CH-03 | A chapter page shall display an admin-approved **summary / key points** in Khmer. |
-| FR-CH-04 | A chapter page shall provide access to the **AI Tutor chat** for that chapter. |
+| FR-CH-04 | A chapter page shall provide access to the **ReanMate chat** for that chapter. |
 | FR-CH-05 | A chapter page shall provide a clear action to **start the quiz** for that chapter. |
 | FR-CH-06 | A visible **AI disclaimer** shall appear in the learning experience (see FR-SAFE-01). |
 
-### 3.4 AI Tutor chat
+### 3.4 ReanMate chat
 
 | ID | Requirement |
 |----|-------------|
-| FR-TUT-01 | The tutor shall operate in **tutor mode**: student asks questions; AI answers in Khmer. |
+| FR-TUT-01 | ReanMate shall operate as a **study buddy (មិត្ត AI)**, not a teacher: the student asks questions; the AI answers in Khmer as a peer who helps them understand. |
 | FR-TUT-02 | Chat shall be **scoped per chapter** (context = that chapter’s source text and summary). |
 | FR-TUT-03 | The system shall **persist chat history** per student per chapter. |
 | FR-TUT-04 | The AI shall be instructed to ground answers in the chapter source material; if insufficient, it shall say it does not know rather than invent textbook facts. |
@@ -223,7 +223,7 @@ Requirements use IDs for traceability (e.g. FR-AUTH-01).
 
 | ID | Requirement |
 |----|-------------|
-| FR-SAFE-01 | The UI shall show a visible notice such as: *“AI Tutor can make mistakes. MoEYS videos and the official textbook are the authority. Verify important answers.”* |
+| FR-SAFE-01 | The UI shall show a visible notice such as: *“ReanMate can make mistakes. MoEYS videos and the official textbook are the authority. Verify important answers.”* |
 | FR-SAFE-02 | The application shall not present itself as an official MoEYS product; MoEYS materials remain credited as third-party/original source content. |
 
 ### 3.8 Access model
@@ -242,7 +242,7 @@ Requirements use IDs for traceability (e.g. FR-AUTH-01).
 | ID | Requirement |
 |----|-------------|
 | NFR-UI-01 | All student-facing and admin-facing UI copy shall be in **Khmer**. |
-| NFR-UI-02 | Layout shall prioritize clarity of the study loop: video → tutor → quiz. |
+| NFR-UI-02 | Layout shall prioritize clarity of the study loop: video → study buddy → quiz. |
 | NFR-UI-03 | Responsive design is required (not desktop-only). |
 
 ### 4.2 Performance
@@ -286,7 +286,7 @@ Requirements use IDs for traceability (e.g. FR-AUTH-01).
 
 | ID | Requirement |
 |----|-------------|
-| NFR-LOC-01 | Learning content, tutor answers, quizzes, and UI: Khmer. |
+| NFR-LOC-01 | Learning content, ReanMate answers, quizzes, and UI: Khmer. |
 | NFR-LOC-02 | This SRS document: English only. |
 
 ---
@@ -305,7 +305,7 @@ Requirements use IDs for traceability (e.g. FR-AUTH-01).
 |-----------|---------|
 | Supabase Auth | Registration and session management |
 | Supabase Postgres | Persistent application data + RLS |
-| AI provider API | Tutor chat; admin content generation; optional quiz explanation assist |
+| AI provider API | ReanMate chat; admin content generation; optional quiz explanation assist |
 | MoEYS video platform | Embedded lesson videos (iframe/embed) |
 
 ### 5.3 Communications
@@ -360,7 +360,7 @@ Requirements use IDs for traceability (e.g. FR-AUTH-01).
 | ID | Issue | Impact |
 |----|--------|--------|
 | OI-01 | Confirm MoEYS embed policy, URL pattern, and mandatory credit text | Blocks final chapter publishing |
-| OI-02 | Final product brand name (currently “AI Tutor”) | Marketing/UI label only |
+| OI-02 | Product name locked as **ReanMate** (មិត្ត AI / study buddy) | UI and docs aligned |
 | OI-03 | Choose initial AI provider (Gemini vs OpenAI) while keeping swappable design | Implementation detail |
 | OI-04 | Math formula rendering (plain text vs KaTeX) if Grade 10–12 math needs rich notation | UX for Math chapters |
 
@@ -372,8 +372,8 @@ The version is acceptable for internship demo review when all of the following a
 
 1. **Accounts:** Student can self sign-up and sign in; admin can access admin area; student cannot.
 2. **Catalog:** Navigation works for grades **10, 11, 12** × Math × History; up to **18** approved chapters can be represented (demo may show a subset if not all content is ready, but the structure must support all 18).
-3. **Chapter page:** For at least one approved chapter per subject (minimum demo bar), student sees MoEYS embed + credit, summary, tutor chat, and quiz entry.
-4. **Tutor:** Student can ask a question in Khmer, receive an answer, see chat history on return, and use Listen (or a clear unavailable state).
+3. **Chapter page:** For at least one approved chapter per subject (minimum demo bar), student sees MoEYS embed + credit, summary, ReanMate chat, and quiz entry.
+4. **Study buddy:** Student can ask a question in Khmer, receive an answer, see chat history on return, and use Listen (or a clear unavailable state).
 5. **Quiz:** Immediate feedback + explanation; retry works; score ≥ 70% marks chapter complete; below 70% then later ≥ 70% also completes.
 6. **Admin:** Admin can paste source text, generate summary + MCQs, edit, leave draft hidden, approve to publish.
 7. **Disclaimer:** AI mistake notice is visible in the learning UI.
@@ -391,7 +391,7 @@ The version is acceptable for internship demo review when all of the following a
 1. Student signs in from their device (any location).
 2. Selects grade → subject → chapter.
 3. Watches MoEYS video (credited).
-4. Reads summary; asks AI Tutor questions; optionally uses Listen.
+4. Reads summary; asks ReanMate questions; optionally uses Listen.
 5. Starts quiz; receives immediate feedback and explanations.
 6. Retries if needed until score ≥ 70%; chapter shows as completed.
 

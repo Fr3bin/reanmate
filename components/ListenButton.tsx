@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useToast } from "@/components/ToastProvider";
 
 /**
  * Reads Khmer text aloud with the browser's speechSynthesis.
@@ -10,6 +11,7 @@ export default function ListenButton({ text }: { text: string }) {
   const [speaking, setSpeaking] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const toast = useToast();
 
   useEffect(() => {
     return () => {
@@ -20,6 +22,7 @@ export default function ListenButton({ text }: { text: string }) {
   const toggle = () => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
       setUnavailable(true);
+      toast.info("សំឡេងមិនអាចប្រើបាននៅលើឧបករណ៍នេះ។");
       return;
     }
 
@@ -31,15 +34,16 @@ export default function ListenButton({ text }: { text: string }) {
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "km-KH";
-    const khmerVoice = window.speechSynthesis
-      .getVoices()
-      .find((v) => v.lang.toLowerCase().startsWith("km"));
+    const voices = window.speechSynthesis.getVoices();
+    const khmerVoice = voices.find((v) => v.lang.toLowerCase().startsWith("km"));
     if (khmerVoice) utterance.voice = khmerVoice;
 
     utterance.onend = () => setSpeaking(false);
-    utterance.onerror = () => {
+    utterance.onerror = (event) => {
       setSpeaking(false);
+      if (event.error === "interrupted" || event.error === "canceled") return;
       setUnavailable(true);
+      toast.info("សំឡេងមិនអាចប្រើបាននៅលើឧបករណ៍នេះ។");
     };
 
     utteranceRef.current = utterance;
@@ -49,7 +53,7 @@ export default function ListenButton({ text }: { text: string }) {
 
   if (unavailable) {
     return (
-      <span className="text-xs text-ink-muted">សំឡេងមិនអាចប្រើបាននៅលើឧបករណ៍នេះ</span>
+      <span className="shrink-0 text-xs text-ink-muted">មិនមានសំឡេង</span>
     );
   }
 
@@ -57,7 +61,11 @@ export default function ListenButton({ text }: { text: string }) {
     <button
       type="button"
       onClick={toggle}
-      className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-primary shadow-sm hover:bg-primary hover:text-white"
+      className={`inline-flex min-h-9 shrink-0 cursor-pointer items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition ${
+        speaking
+          ? "speak-on bg-primary text-white"
+          : "text-primary hover:bg-primary hover:text-white"
+      }`}
     >
       {speaking ? "◼ បញ្ឈប់" : "🔊 ស្តាប់"}
     </button>

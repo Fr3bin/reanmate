@@ -5,9 +5,23 @@
 
 import type { ChatMessage } from "@/lib/types";
 
-const PROGRESS_KEY = "ai-tutor:progress";
-const LAST_CHAPTER_KEY = "ai-tutor:last-chapter";
-const chatKey = (chapterId: string) => `ai-tutor:chat:${chapterId}`;
+const PROGRESS_KEY = "reanmate:progress";
+const LAST_CHAPTER_KEY = "reanmate:last-chapter";
+const chatKey = (chapterId: string) => `reanmate:chat:${chapterId}`;
+const LEGACY_PROGRESS_KEY = "ai-tutor:progress";
+const LEGACY_LAST_CHAPTER_KEY = "ai-tutor:last-chapter";
+const legacyChatKey = (chapterId: string) => `ai-tutor:chat:${chapterId}`;
+
+function readKey(key: string, legacyKey: string): string | null {
+  const current = localStorage.getItem(key);
+  if (current) return current;
+  const legacy = localStorage.getItem(legacyKey);
+  if (legacy) {
+    localStorage.setItem(key, legacy);
+    return legacy;
+  }
+  return null;
+}
 
 export interface StoredProgress {
   [chapterId: string]: { bestScorePercent: number; completedAt: string | null };
@@ -31,7 +45,7 @@ function safeParse<T>(raw: string | null, fallback: T): T {
 
 export function getProgress(): StoredProgress {
   if (typeof window === "undefined") return {};
-  return safeParse(localStorage.getItem(PROGRESS_KEY), {});
+  return safeParse(readKey(PROGRESS_KEY, LEGACY_PROGRESS_KEY), {});
 }
 
 export function recordQuizResult(chapterId: string, scorePercent: number): void {
@@ -56,12 +70,18 @@ export function setLastVisited(visit: LastVisited): void {
 
 export function getLastVisited(): LastVisited | null {
   if (typeof window === "undefined") return null;
-  return safeParse<LastVisited | null>(localStorage.getItem(LAST_CHAPTER_KEY), null);
+  return safeParse<LastVisited | null>(
+    readKey(LAST_CHAPTER_KEY, LEGACY_LAST_CHAPTER_KEY),
+    null,
+  );
 }
 
 export function getChatHistory(chapterId: string): ChatMessage[] {
   if (typeof window === "undefined") return [];
-  return safeParse<ChatMessage[]>(localStorage.getItem(chatKey(chapterId)), []);
+  return safeParse<ChatMessage[]>(
+    readKey(chatKey(chapterId), legacyChatKey(chapterId)),
+    [],
+  );
 }
 
 export function saveChatHistory(chapterId: string, messages: ChatMessage[]): void {

@@ -1,9 +1,9 @@
-# AI Tutor
+# ReanMate
 
 Web app for Cambodian grade 10–12 students to study **Mathematics** and
 **History** in Khmer — aligned with MoEYS textbook chapters. Per chapter:
-watch the official MoEYS video, ask the AI tutor (with voice), then take an
-MCQ quiz with explanations.
+watch the official MoEYS video, ask **ReanMate** (មិត្ត AI — a study buddy,
+not a teacher), then take an MCQ quiz with explanations.
 
 **Status:** frontend-only demo. All data is mocked; the Node.js + MongoDB
 backend will be integrated by the backend team using
@@ -27,7 +27,7 @@ npm start
 ## Stack
 
 - Next.js (App Router) + TypeScript + Tailwind CSS v4
-- Khmer fonts: Noto Sans Khmer (body), Hanuman (display)
+- Khmer font: Kantumruy Pro
 - Mock data: `content/*.json`; client persistence via `localStorage`
 - Listen button: browser `speechSynthesis` (`km-KH`), graceful fallback
 
@@ -36,7 +36,7 @@ npm start
 ```text
 app/                    # routes (landing, login, home, learn, admin)
 components/             # UI components (chat, quiz, editor, cards…)
-content/                # mock chapters, canned tutor replies, generated sample
+content/                # mock chapters, canned ReanMate replies, generated sample
 lib/api/                # data access — swap mocks for fetch calls here
 lib/types.ts            # shared API types (contract with backend)
 lib/progress.ts         # localStorage progress/chat (until backend)
@@ -89,7 +89,7 @@ Open http://localhost:3000 in **Chrome**.
 1. Landing → **ចាប់ផ្តើមរៀន**
 2. Login page → **បន្តជាសិស្ស** (skip real auth)
 3. Home → **ថ្នាក់ទី១០** → **គណិតវិទ្យា** or **ប្រវត្តិវិទ្យា**
-4. Open a chapter → video placeholder + summary → **សួរគ្រូ AI**
+4. Open a chapter → video placeholder + summary → **សួរមិត្ត AI**
 5. **ចាប់ផ្តើមតេស្ត** → answer all questions → finish (pass at ≥ 70%)
 
 Demo chapters: Grade 10 Math (**អនុគមន៍**) and Grade 10 History (**អាណាចក្រហ្វូណន**). Grades 11–12 show an empty “coming soon” state on purpose.
@@ -106,7 +106,7 @@ Demo chapters: Grade 10 Math (**អនុគមន៍**) and Grade 10 History (*
 | Area | Current behavior |
 |------|------------------|
 | Login | Form shows a notice; use the skip buttons |
-| Tutor chat | Canned Khmer replies from `content/canned-replies.json` |
+| ReanMate chat | Canned Khmer replies from `content/canned-replies.json` |
 | Admin generate | Fake delay, then `content/generated-sample.json` |
 | Progress / chat history | `localStorage` only |
 | MoEYS video | Placeholder until embed URLs are added |

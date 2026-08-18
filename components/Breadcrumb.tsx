@@ -23,7 +23,10 @@ export default function Breadcrumb({
               </span>
             ) : null}
             {item.href && !isLast ? (
-              <Link href={item.href} className="hover:text-primary">
+              <Link
+                href={item.href}
+                className="inline-flex min-h-9 items-center transition hover:text-primary"
+              >
                 {item.label}
               </Link>
             ) : (

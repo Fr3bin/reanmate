@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { generateChapterContent } from "@/lib/api";
 import { toKhmerNumber } from "@/lib/format";
+import { useToast } from "@/components/ToastProvider";
 import type { Chapter, Grade, SubjectId } from "@/lib/types";
 
 interface EditableQuestion {
@@ -39,15 +39,24 @@ export default function ChapterEditor({ chapter }: { chapter: Chapter | null }) 
   );
   const [status, setStatus] = useState(chapter?.status ?? "draft");
   const [generating, setGenerating] = useState(false);
-  const [savedNotice, setSavedNotice] = useState<string | null>(null);
+  const toast = useToast();
 
   const generate = async () => {
-    if (!sourceText.trim() || generating) return;
+    if (generating) {
+      toast.info("កំពុងបង្កើត…");
+      return;
+    }
+    if (!sourceText.trim()) {
+      toast.error("សូមបិទភ្ជាប់អត្ថបទប្រភពជាមុនសិន។");
+      document.getElementById("source-text")?.focus();
+      return;
+    }
     setGenerating(true);
     const generated = await generateChapterContent(subject);
     setSummary(generated.summary);
     setQuestions(generated.questions.map((q) => ({ ...q, options: [...q.options] })));
     setGenerating(false);
+    toast.success("បានបង្កើតសង្ខេប និងសំណួរ។ សូមពិនិត្យខាងក្រោម។");
   };
 
   const updateQuestion = (
@@ -60,28 +69,27 @@ export default function ChapterEditor({ chapter }: { chapter: Chapter | null }) 
   };
 
   const save = (nextStatus: "draft" | "approved") => {
+    if (nextStatus === "approved") {
+      if (!title.trim() || !summary.trim() || questions.length === 0) {
+        toast.error("ត្រូវការចំណងជើង សង្ខេប និងសំណួរ សិនទើបអនុម័តបាន។");
+        return;
+      }
+    }
     setStatus(nextStatus);
-    setSavedNotice(
+    toast.success(
       nextStatus === "approved"
         ? "បានអនុម័ត (សាកល្បង — ការរក្សាទុកពិតប្រាកដនឹងភ្ជាប់ជាមួយម៉ាស៊ីនមេ)"
         : "បានរក្សាទុកជាព្រាង (សាកល្បង)",
     );
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const inputClass =
-    "mt-1 w-full rounded-md border border-line px-3 py-2.5 text-base focus:border-primary focus:outline-none";
+    "mt-1 w-full rounded-xl border border-line px-3 py-2.5 text-base focus:border-primary focus:outline-none";
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      {savedNotice ? (
-        <div className="rounded-lg bg-success-soft px-4 py-3 text-sm font-bold text-success">
-          {savedNotice}
-        </div>
-      ) : null}
-
       {/* 1. Metadata */}
-      <section className="rounded-xl border border-line bg-surface p-5">
+      <section className="ui-card p-5">
         <h2 className="font-bold text-primary">១. ព័ត៌មានមេរៀន</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <label className="text-sm font-medium">
@@ -130,7 +138,7 @@ export default function ChapterEditor({ chapter }: { chapter: Chapter | null }) 
       </section>
 
       {/* 2. MoEYS video */}
-      <section className="rounded-xl border border-line bg-surface p-5">
+      <section className="ui-card p-5">
         <h2 className="font-bold text-primary">២. វីដេអូ MoEYS</h2>
         <div className="mt-4 flex flex-col gap-4">
           <label className="text-sm font-medium">
@@ -155,13 +163,14 @@ export default function ChapterEditor({ chapter }: { chapter: Chapter | null }) 
       </section>
 
       {/* 3. Source text + Generate */}
-      <section className="rounded-xl border border-line bg-surface p-5">
+      <section className="ui-card p-5">
         <h2 className="font-bold text-primary">៣. អត្ថបទប្រភព (ពីសៀវភៅសិក្សា)</h2>
         <p className="mt-1 text-sm text-ink-muted">
           បិទភ្ជាប់អត្ថបទមេរៀនពី PDF សៀវភៅសិក្សា រួចចុច «បង្កើតដោយ AI» —
           AI នឹងសរសេរសង្ខេប និងសំណួរ MCQ ឱ្យស្វ័យប្រវត្តិ។
         </p>
         <textarea
+          id="source-text"
           value={sourceText}
           onChange={(e) => setSourceText(e.target.value)}
           rows={7}
@@ -171,20 +180,36 @@ export default function ChapterEditor({ chapter }: { chapter: Chapter | null }) 
         <button
           type="button"
           onClick={generate}
-          disabled={!sourceText.trim() || generating}
-          className="mt-4 min-h-11 w-full rounded-lg bg-primary px-6 py-2.5 font-bold text-white hover:bg-primary-dark disabled:opacity-50 sm:w-auto"
+          className={`ui-btn mt-4 min-h-11 w-full rounded-xl bg-primary px-6 py-2.5 font-semibold text-white hover:bg-primary-dark sm:w-auto ${
+            !sourceText.trim() || generating ? "opacity-80" : ""
+          }`}
         >
-          {generating ? "កំពុងបង្កើត…" : "✨ បង្កើតដោយ AI"}
+          {generating ? (
+            <span className="inline-flex items-center gap-2">
+              <span className="typing-dots typing-dots-light" aria-hidden>
+                <span />
+                <span />
+                <span />
+              </span>
+              កំពុងបង្កើត…
+            </span>
+          ) : (
+            "បង្កើតដោយ AI"
+          )}
         </button>
         {generating ? (
           <p className="mt-2 text-sm text-ink-muted">
             AI កំពុងអានអត្ថបទប្រភព និងសរសេរសង្ខេប + សំណួរ… (សាកល្បង)
           </p>
+        ) : !sourceText.trim() ? (
+          <p className="mt-2 text-sm text-ink-muted">
+            បិទភ្ជាប់អត្ថបទប្រភពជាមុន ទើបចុចបង្កើតបាន។
+          </p>
         ) : null}
       </section>
 
       {/* 4. Review generated content */}
-      <section className="rounded-xl border border-line bg-surface p-5">
+      <section className="ui-card p-5">
         <h2 className="font-bold text-primary">៤. សង្ខេបមេរៀន (ពិនិត្យ និងកែសម្រួល)</h2>
         <textarea
           value={summary}
@@ -195,7 +220,7 @@ export default function ChapterEditor({ chapter }: { chapter: Chapter | null }) 
         />
       </section>
 
-      <section className="rounded-xl border border-line bg-surface p-5">
+      <section className="ui-card p-5">
         <h2 className="font-bold text-primary">
           ៥. សំណួរ MCQ ({questions.length})
         </h2>
@@ -226,6 +251,7 @@ export default function ChapterEditor({ chapter }: { chapter: Chapter | null }) 
                           updateQuestion(qIndex, { correctIndex: optionIndex })
                         }
                         title="ចម្លើយត្រឹមត្រូវ"
+                        className="h-5 w-5 shrink-0 accent-primary"
                       />
                       <input
                         value={option}
@@ -257,7 +283,7 @@ export default function ChapterEditor({ chapter }: { chapter: Chapter | null }) 
       </section>
 
       {/* 6. Publish */}
-      <section className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-surface p-5">
+      <section className="ui-card flex flex-wrap items-center gap-3 p-5">
         <span className="text-sm font-medium">
           ស្ថានភាព៖{" "}
           {status === "approved" ? (
@@ -270,24 +296,21 @@ export default function ChapterEditor({ chapter }: { chapter: Chapter | null }) 
           <button
             type="button"
             onClick={() => save("draft")}
-            className="min-h-11 rounded-lg border border-primary px-5 py-2.5 font-bold text-primary hover:bg-primary-light"
+            className="ui-btn min-h-11 rounded-xl border border-primary px-5 py-2.5 font-semibold text-primary hover:bg-primary-light"
           >
             រក្សាទុកជាព្រាង
           </button>
           <button
             type="button"
             onClick={() => save("approved")}
-            disabled={!title.trim() || !summary.trim() || questions.length === 0}
-            className="min-h-11 rounded-lg bg-cta px-5 py-2.5 font-bold text-white hover:bg-cta-dark disabled:opacity-50"
+            className={`ui-btn min-h-11 rounded-xl bg-cta px-5 py-2.5 font-semibold text-white hover:bg-cta-dark ${
+              !title.trim() || !summary.trim() || questions.length === 0 ? "opacity-80" : ""
+            }`}
           >
             អនុម័ត និងផ្សព្វផ្សាយ
           </button>
         </div>
       </section>
-
-      <Link href="/admin" className="text-sm text-ink-muted hover:text-primary">
-        ← ត្រឡប់ទៅបញ្ជីមេរៀន
-      </Link>
     </div>
   );
 }

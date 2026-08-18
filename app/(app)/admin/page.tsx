@@ -1,30 +1,48 @@
 import Link from "next/link";
+import BackLink from "@/components/BackLink";
 import PageTitle from "@/components/PageTitle";
 import { getAllChapters, getSubject } from "@/lib/api";
 import { toKhmerNumber } from "@/lib/format";
 
 export default function AdminPage() {
   const chapters = getAllChapters();
+  const approved = chapters.filter((c) => c.status === "approved").length;
+  const drafts = chapters.length - approved;
 
   return (
     <div>
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+      <BackLink href="/home" label="ត្រឡប់ទៅទំព័រដើម" />
+      <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <PageTitle className="sm:min-w-0 sm:flex-1">ផ្ទាំងគ្រប់គ្រង — មេរៀនទាំងអស់</PageTitle>
         <Link
           href="/admin/chapters/new"
-          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-cta px-5 py-2.5 text-center font-bold text-white hover:bg-cta-dark"
+          className="ui-btn inline-flex min-h-11 items-center justify-center rounded-xl bg-cta px-5 py-2.5 text-center font-semibold text-white hover:bg-cta-dark"
         >
           + បង្កើតមេរៀនថ្មី
         </Link>
       </div>
 
-      {/* Phone: cards */}
+      <div className="stagger mt-6 grid grid-cols-3 gap-3">
+        <div className="ui-card px-4 py-4 text-center">
+          <p className="text-2xl font-bold text-primary">{toKhmerNumber(chapters.length)}</p>
+          <p className="mt-1 text-xs text-ink-muted">មេរៀនទាំងអស់</p>
+        </div>
+        <div className="ui-card px-4 py-4 text-center">
+          <p className="text-2xl font-bold text-success">{toKhmerNumber(approved)}</p>
+          <p className="mt-1 text-xs text-ink-muted">បានអនុម័ត</p>
+        </div>
+        <div className="ui-card px-4 py-4 text-center">
+          <p className="text-2xl font-bold text-cta">{toKhmerNumber(drafts)}</p>
+          <p className="mt-1 text-xs text-ink-muted">ព្រាង</p>
+        </div>
+      </div>
+
       <div className="mt-6 flex flex-col gap-3 md:hidden">
         {chapters.map((chapter) => (
           <Link
             key={chapter.id}
             href={`/admin/chapters/${chapter.id}`}
-            className="rounded-2xl border border-line bg-surface p-4 shadow-sm"
+            className="ui-card p-4"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -50,11 +68,10 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {/* Tablet / desktop: table */}
-      <div className="mt-6 hidden overflow-x-auto rounded-xl border border-line bg-surface md:block">
+      <div className="mt-6 hidden overflow-hidden rounded-2xl border border-line bg-surface md:block">
         <table className="w-full min-w-[640px] text-sm">
           <thead>
-            <tr className="bg-primary text-left text-white">
+            <tr className="bg-primary-dark text-left text-white">
               <th className="px-4 py-3 font-medium">ថ្នាក់</th>
               <th className="px-4 py-3 font-medium">មុខវិជ្ជា</th>
               <th className="px-4 py-3 font-medium">មេរៀន</th>
@@ -65,7 +82,10 @@ export default function AdminPage() {
           </thead>
           <tbody>
             {chapters.map((chapter) => (
-              <tr key={chapter.id} className="border-t border-line">
+              <tr
+                key={chapter.id}
+                className="border-t border-line transition-colors hover:bg-primary-light/60"
+              >
                 <td className="px-4 py-3">ទី{toKhmerNumber(chapter.grade)}</td>
                 <td className="px-4 py-3">{getSubject(chapter.subject).nameKm}</td>
                 <td className="px-4 py-3 font-medium">{chapter.title}</td>
@@ -84,7 +104,7 @@ export default function AdminPage() {
                 <td className="px-4 py-3 text-right">
                   <Link
                     href={`/admin/chapters/${chapter.id}`}
-                    className="font-medium text-primary hover:underline"
+                    className="inline-flex min-h-11 items-center font-medium text-primary hover:underline"
                   >
                     កែសម្រួល
                   </Link>

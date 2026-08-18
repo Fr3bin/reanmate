@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { getChapter } from "@/lib/api";
 import { getLastVisited, type LastVisited } from "@/lib/progress";
 import { toKhmerNumber } from "@/lib/format";
 
@@ -14,7 +15,13 @@ export default function ContinueCard() {
   const [last, setLast] = useState<LastVisited | null>(null);
 
   useEffect(() => {
-    setLast(getLastVisited());
+    const visit = getLastVisited();
+    if (!visit?.chapterId) {
+      setLast(null);
+      return;
+    }
+    const chapter = getChapter(visit.chapterId);
+    setLast(chapter?.status === "approved" ? visit : null);
   }, []);
 
   if (!last?.chapterId || !last.title) return null;
@@ -22,16 +29,17 @@ export default function ContinueCard() {
   return (
     <Link
       href={`/learn/${last.grade}/${last.subject}/${last.chapterId}`}
-      className="flex flex-col gap-3 rounded-xl bg-primary p-5 text-white transition hover:bg-primary-dark sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+      className="ui-card group relative flex min-h-[4.5rem] items-center justify-between gap-4 overflow-hidden py-4 pl-6 pr-5"
     >
-      <div>
-        <p className="text-sm text-gold">បន្តការសិក្សា</p>
-        <p className="mt-1 text-lg font-bold">{last.title}</p>
-        <p className="text-sm text-white/80">
+      <span className="absolute inset-y-0 left-0 w-1 bg-gold" />
+      <div className="min-w-0">
+        <p className="ui-kicker">បន្តរៀន</p>
+        <p className="mt-1 text-lg font-semibold text-primary">{last.title}</p>
+        <p className="text-sm text-ink-muted">
           ថ្នាក់ទី{toKhmerNumber(last.grade)} · {SUBJECT_LABELS[last.subject] ?? last.subject}
         </p>
       </div>
-      <span className="inline-flex w-full items-center justify-center rounded-md bg-cta px-4 py-2 text-sm font-bold sm:w-auto">
+      <span className="shrink-0 text-sm font-semibold text-cta transition-transform group-hover:translate-x-1">
         បន្ត →
       </span>
     </Link>

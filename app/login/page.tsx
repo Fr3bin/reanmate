@@ -1,87 +1,216 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Mascot from "@/components/Mascot";
 import SiteNavbar from "@/components/SiteNavbar";
+import { useToast } from "@/components/ToastProvider";
+
+const BACKEND_NOTICE =
+  "ម៉ាស៊ីនមេមិនទាន់ភ្ជាប់ទេ។ សូមប្រើ «បន្តជាសិស្ស» ឬ «បន្តជា Admin» ដើម្បីសាកល្បង។";
+
+type AuthTab = "login" | "signup";
 
 export default function LoginPage() {
-  const [notice, setNotice] = useState(false);
+  const [tab, setTab] = useState<AuthTab>("login");
+  const router = useRouter();
+  const toast = useToast();
+
+  useEffect(() => {
+    if (window.location.hash === "#signup") setTab("signup");
+  }, []);
+
+  const inputClass =
+    "mt-1 w-full rounded-xl border border-line bg-bg/50 px-3 py-2.5 text-base focus:border-primary focus:outline-none";
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <SiteNavbar variant="auth" homeHref="/" />
 
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
-        <div className="rounded-2xl border border-line bg-surface p-6 shadow-sm">
-          <h1 className="text-center font-[family-name:var(--font-display)] text-2xl font-bold text-primary">
-            ចូលគណនី
-          </h1>
+      <div className="flex flex-1 flex-col lg:flex-row">
+        <aside className="relative hidden overflow-hidden bg-primary-dark px-12 py-16 text-white lg:flex lg:w-[44%] lg:flex-col lg:justify-center">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(212,176,92,0.18),_transparent_55%)]"
+          />
+          <div className="relative">
+            <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-primary">
+              <Mascot size={80} onDark className="mascot-bob" />
+            </div>
+            <p className="ui-kicker">ReanMate · មិត្ត AI</p>
+            <h2 className="mt-3 text-3xl font-bold leading-snug">
+              រៀនគណិត និងប្រវត្តិ
+              <span className="mt-1 block text-gold">ជាមួយមិត្ត AI</span>
+            </h2>
+            <ul className="mt-8 space-y-3 text-sm text-white/70">
+              <li>មើលវីដេអូ MoEYS តាមមេរៀន</li>
+              <li>សួរ AI បើមានចំណុចមិនយល់</li>
+              <li>ធ្វើតេស្ត មានការពន្យល់</li>
+            </ul>
+          </div>
+        </aside>
 
-          <form
-            className="mt-6 flex flex-col gap-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              setNotice(true);
-            }}
-          >
-            <label className="text-sm font-medium">
-              អ៊ីមែល
-              <input
-                type="email"
-                placeholder="you@example.com"
-                className="mt-1 w-full rounded-md border border-line px-3 py-2.5 text-base focus:border-primary focus:outline-none"
-              />
-            </label>
-            <label className="text-sm font-medium">
-              ពាក្យសម្ងាត់
-              <input
-                type="password"
-                placeholder="••••••••"
-                className="mt-1 w-full rounded-md border border-line px-3 py-2.5 text-base focus:border-primary focus:outline-none"
-              />
-            </label>
-            <button
-              type="submit"
-              className="min-h-11 rounded-md bg-cta py-2.5 font-bold text-white hover:bg-cta-dark"
-            >
-              ចូល
-            </button>
-          </form>
-
-          {notice ? (
-            <p className="mt-3 rounded-md bg-section px-3 py-2 text-center text-sm text-ink-muted">
-              ការចូលគណនីពិតប្រាកដ នឹងភ្ជាប់ជាមួយម៉ាស៊ីនមេនៅពេលក្រោយ។
-              សូមប្រើប៊ូតុងខាងក្រោមសម្រាប់ការសាកល្បង។
+        <main className="rise mx-auto flex w-full max-w-[440px] flex-1 flex-col justify-center px-4 py-14 pb-[max(2.5rem,env(safe-area-inset-bottom))] lg:max-w-none lg:px-10">
+          <div className="mx-auto w-full max-w-[420px] ui-card px-6 py-8 sm:px-8">
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary-dark lg:hidden">
+              <Mascot size={64} onDark className="mascot-bob" />
+            </div>
+            <h1 className="text-center text-2xl font-bold text-primary">
+              {tab === "login" ? "ចូលគណនី" : "ចុះឈ្មោះ"}
+            </h1>
+            <p className="mt-1 text-center text-sm text-ink-muted">
+              សាកល្បងឥឡូវនេះ — មិនចាំបាច់បង្កើតគណនី
             </p>
-          ) : null}
 
-          <div className="my-5 flex items-center gap-3 text-xs text-ink-muted">
-            <span className="h-px flex-1 bg-line" />
-            សម្រាប់ការសាកល្បង
-            <span className="h-px flex-1 bg-line" />
+            <div className="mt-7 flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() => router.replace("/home")}
+                className="ui-btn min-h-11 rounded-xl bg-cta py-2.5 text-center font-semibold text-white hover:bg-cta-dark"
+              >
+                បន្តជាសិស្ស
+              </button>
+              <button
+                type="button"
+                onClick={() => router.replace("/admin")}
+                className="ui-btn min-h-11 rounded-xl border border-primary/20 py-2.5 text-center font-semibold text-primary hover:bg-primary-light"
+              >
+                បន្តជា Admin
+              </button>
+            </div>
+
+            <div className="my-6 flex items-center gap-3 text-xs text-ink-muted">
+              <span className="h-px flex-1 bg-line" />
+              ឬប្រើគណនី
+              <span className="h-px flex-1 bg-line" />
+            </div>
+
+            <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl bg-bg p-1">
+              <button
+                type="button"
+                onClick={() => setTab("login")}
+                className={`ui-btn min-h-11 rounded-lg text-sm font-semibold ${
+                  tab === "login"
+                    ? "bg-surface text-primary shadow-sm"
+                    : "text-ink-muted hover:text-primary"
+                }`}
+              >
+                ចូល
+              </button>
+              <button
+                type="button"
+                onClick={() => setTab("signup")}
+                className={`ui-btn min-h-11 rounded-lg text-sm font-semibold ${
+                  tab === "signup"
+                    ? "bg-surface text-primary shadow-sm"
+                    : "text-ink-muted hover:text-primary"
+                }`}
+              >
+                ចុះឈ្មោះ
+              </button>
+            </div>
+
+            {tab === "login" ? (
+              <form
+                className="flex flex-col gap-4"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  toast.info(BACKEND_NOTICE);
+                }}
+              >
+                <label className="text-sm font-medium">
+                  អ៊ីមែល
+                  <input
+                    type="email"
+                    name="email"
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    className={inputClass}
+                  />
+                </label>
+                <label className="text-sm font-medium">
+                  ពាក្យសម្ងាត់
+                  <input
+                    type="password"
+                    name="password"
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                    className={inputClass}
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="ui-btn min-h-11 rounded-xl bg-primary py-2.5 font-semibold text-white hover:bg-primary-dark"
+                >
+                  ចូល
+                </button>
+              </form>
+            ) : (
+              <form
+                className="flex flex-col gap-4"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  const data = new FormData(event.currentTarget);
+                  const password = String(data.get("password") ?? "");
+                  const confirm = String(data.get("confirm") ?? "");
+                  if (password !== confirm) {
+                    toast.error("ពាក្យសម្ងាត់ទាំងពីរមិនដូចគ្នាទេ។");
+                    return;
+                  }
+                  toast.info(BACKEND_NOTICE);
+                }}
+              >
+                <label className="text-sm font-medium">
+                  ឈ្មោះ
+                  <input
+                    type="text"
+                    name="displayName"
+                    autoComplete="name"
+                    placeholder="ឈ្មោះសិស្ស"
+                    className={inputClass}
+                  />
+                </label>
+                <label className="text-sm font-medium">
+                  អ៊ីមែល
+                  <input
+                    type="email"
+                    name="email"
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    className={inputClass}
+                  />
+                </label>
+                <label className="text-sm font-medium">
+                  ពាក្យសម្ងាត់
+                  <input
+                    type="password"
+                    name="password"
+                    autoComplete="new-password"
+                    placeholder="••••••••"
+                    className={inputClass}
+                  />
+                </label>
+                <label className="text-sm font-medium">
+                  បញ្ជាក់ពាក្យសម្ងាត់
+                  <input
+                    type="password"
+                    name="confirm"
+                    autoComplete="new-password"
+                    placeholder="••••••••"
+                    className={inputClass}
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="ui-btn min-h-11 rounded-xl bg-primary py-2.5 font-semibold text-white hover:bg-primary-dark"
+                >
+                  បង្កើតគណនី
+                </button>
+              </form>
+            )}
           </div>
-
-          <div className="flex flex-col gap-3">
-            <Link
-              href="/home"
-              className="min-h-11 rounded-md bg-primary py-2.5 text-center font-bold text-white hover:bg-primary-dark"
-            >
-              បន្តជាសិស្ស
-            </Link>
-            <Link
-              href="/admin"
-              className="min-h-11 rounded-md border border-primary py-2.5 text-center font-bold text-primary hover:bg-primary-light"
-            >
-              បន្តជា Admin
-            </Link>
-          </div>
-        </div>
-
-        <p className="mt-4 text-center text-sm text-ink-muted">
-          មិនទាន់មានគណនី?{" "}
-          <span className="font-medium text-primary">បង្កើតគណនី (មកដល់ឆាប់ៗ)</span>
-        </p>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
