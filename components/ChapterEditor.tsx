@@ -179,11 +179,11 @@ export default function ChapterEditor({ chapter }: { chapter: Chapter | null }) 
         <h2 className="font-bold text-primary">២. វីដេអូមេរៀន</h2>
         <div className="mt-4 flex flex-col gap-4">
           <label className="text-sm font-medium">
-            Embed URL
+            Embed URL (YouTube ឬទំព័រមេរៀន EBC)
             <input
               value={embedUrl}
               onChange={(e) => setEmbedUrl(e.target.value)}
-              placeholder="https://…"
+              placeholder="https://www.youtube.com/embed/… ឬ https://ebc.edu.kh/…"
               className={inputClass}
             />
           </label>

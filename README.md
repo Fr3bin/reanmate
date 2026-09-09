@@ -105,7 +105,7 @@ Open http://localhost:3000 in **Chrome**.
 4. Open a chapter → lesson video (MoEYS curriculum / EBC) + summary → **សួរមិត្ត AI**
 5. **ចាប់ផ្តើមតេស្ត** → answer all questions → finish (pass at ≥ 70%)
 
-Demo chapters: **18** approved lessons (3 per subject × 2 subjects × 3 grades). Ten have matching EBC YouTube lessons (same grade and topic). Eight show a placeholder when no matching public clip exists.
+Demo chapters: **18** approved lessons (3 per subject × 2 subjects × 3 grades). Ten play a matching EBC YouTube clip in the page. Eight open the matching lesson on [ebc.edu.kh](https://ebc.edu.kh) (same grade and topic) because EBC has not published those episodes on YouTube.
 
 ### Admin flow to click through
 
@@ -122,6 +122,6 @@ Demo chapters: **18** approved lessons (3 per subject × 2 subjects × 3 grades)
 | ReanMate chat | Canned replies unless the API URL is set |
 | Admin generate | Fake sample unless the API URL is set and the chapter already has an id |
 | Progress / chat / admin drafts | `localStorage` only |
-| Lesson video | YouTube embeds where a public clip is available; otherwise the existing placeholder |
+| Lesson video | YouTube embeds when EBC published a matching clip; otherwise a button to the matching EBC lesson page |
 
 Please review UI, Khmer copy, and user flow. Backend work should follow [docs/API-CONTRACT.md](docs/API-CONTRACT.md).

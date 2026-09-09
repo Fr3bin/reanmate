@@ -41,7 +41,7 @@ export interface Chapter {
   summary: string;
   /** Textbook-derived source text used for AI grounding (admin only) */
   sourceText: string;
-  /** MoEYS video embed URL; empty string when not configured yet */
+  /** YouTube embed/watch URL, or an EBC lesson page URL when YouTube has no matching episode */
   moeysEmbedUrl: string;
   /** Attribution shown under the video */
   moeysCredit: string;

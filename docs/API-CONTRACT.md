@@ -45,6 +45,8 @@ Password reset is manual (admin edits DB) for the demo — no endpoint needed.
 
 `Chapter` shape: see `lib/types.ts` (`grade`, `subject`, `title`, `sortOrder`,
 `summary`, `moeysEmbedUrl`, `moeysCredit`, `status`, `questions[]`).
+`moeysEmbedUrl` is a YouTube embed/watch URL, or an `ebc.edu.kh` lesson page
+when YouTube has no matching episode.
 
 Questions include `correctIndex` + `explanation` because the quiz gives
 immediate client-side feedback. If we later care about answer leaking, we can

@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { isChapterCompleted } from "@/lib/progress";
 import { toKhmerNumber } from "@/lib/format";
-import { youtubeThumbUrl } from "@/lib/youtube";
+import { isExternalLessonUrl, youtubeThumbUrl } from "@/lib/youtube";
 import type { Chapter } from "@/lib/types";
 
 export default function ChapterCard({ chapter }: { chapter: Chapter }) {
   const [completed, setCompleted] = useState(false);
   const thumb = youtubeThumbUrl(chapter.moeysEmbedUrl);
+  const ebcLinked = isExternalLessonUrl(chapter.moeysEmbedUrl);
 
   useEffect(() => {
     setCompleted(isChapterCompleted(chapter.id));
@@ -44,6 +45,10 @@ export default function ChapterCard({ chapter }: { chapter: Chapter }) {
         {completed ? (
           <span className="absolute left-4 top-4 z-10 rounded-full bg-success px-2.5 py-0.5 text-[10px] font-semibold text-white">
             បានបញ្ចប់
+          </span>
+        ) : ebcLinked ? (
+          <span className="absolute left-4 top-4 z-10 rounded-full bg-black/40 px-2.5 py-0.5 text-[10px] font-semibold text-gold">
+            EBC
           </span>
         ) : null}
         <span className="absolute right-4 top-4 z-10 text-4xl text-white/25">
