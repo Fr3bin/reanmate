@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import BackLink, { overlayNav } from "@/components/BackLink";
 import Mascot from "@/components/Mascot";
+import MathText from "@/components/MathText";
 import PageTitle from "@/components/PageTitle";
 import StudySteps from "@/components/StudySteps";
 import { recordQuizResult } from "@/lib/progress";
@@ -268,7 +269,7 @@ export default function QuizRunner({
             className={`ui-card p-4 sm:p-5 ${nudgeId === question.id ? "ring-2 ring-cta" : ""}`}
           >
             <p className="font-bold">
-              {toKhmerNumber(qIndex + 1)}. {question.prompt}
+              {toKhmerNumber(qIndex + 1)}. <MathText text={question.prompt} />
             </p>
 
             <div className="mt-4 flex flex-col gap-2">
@@ -303,7 +304,7 @@ export default function QuizRunner({
                       {LETTERS[optionIndex] ?? toKhmerNumber(optionIndex + 1)}
                     </span>
                     <span className="min-w-0 flex-1 pt-0.5">
-                      {option}
+                      <MathText text={option} />
                       {isAnswered && isCorrect ? (
                         <span className="ml-2 font-bold text-success">✓</span>
                       ) : null}
@@ -319,7 +320,9 @@ export default function QuizRunner({
             {isAnswered ? (
               <div className="msg-in mt-4 rounded-xl bg-primary-light p-4 text-sm">
                 <p className="font-bold text-primary">ការពន្យល់</p>
-                <p className="mt-1">{question.explanation}</p>
+                <p className="mt-1">
+                  <MathText text={question.explanation} />
+                </p>
               </div>
             ) : null}
           </div>

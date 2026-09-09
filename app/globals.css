@@ -152,9 +152,7 @@ select:focus {
   box-shadow: 0 0 0 4px rgba(11, 92, 91, 0.12);
 }
 
-.mascot-on-dark {
-  mix-blend-mode: lighten;
-}
+/* Mascot PNG is transparent; no blend hack */
 
 @keyframes rise {
   from {
@@ -687,4 +685,13 @@ select:focus {
   .ui-btn {
     transition: none;
   }
+}
+
+.katex {
+  font-size: 1.05em;
+}
+
+.bg-primary .katex,
+.bg-primary .katex * {
+  color: inherit;
 }

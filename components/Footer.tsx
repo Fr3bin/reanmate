@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { AI_DISCLAIMER } from "@/lib/copy";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -15,10 +16,7 @@ export default function Footer() {
       }`}
     >
       <div className="mx-auto max-w-6xl px-4 py-8 text-center text-sm text-ink-muted">
-        <p>
-          ReanMate អាចមានកំហុស។ សូមពិនិត្យជាមួយវីដេអូ MoEYS
-          និងសៀវភៅសិក្សា។
-        </p>
+        <p>{AI_DISCLAIMER}</p>
         <p className="mt-3 pb-[env(safe-area-inset-bottom)] text-xs tracking-wide text-ink-muted/80">
           © {new Date().getFullYear()} ReanMate
         </p>

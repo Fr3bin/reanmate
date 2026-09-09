@@ -1,14 +1,15 @@
 /**
- * Data access layer — mock implementation.
+ * Data access layer.
  *
- * Every function mirrors an endpoint in docs/API-CONTRACT.md. When the
- * Node.js + MongoDB backend is ready, replace the bodies with fetch calls;
- * signatures and return types must stay the same.
+ * Catalog reads stay mocked from JSON so the demo runs without a server.
+ * Chat generate + auth use fetch when NEXT_PUBLIC_API_URL is set
+ * (see lib/api/remote.ts). Signatures match docs/API-CONTRACT.md.
  */
 
 import chaptersJson from "@/content/chapters.json";
 import cannedRepliesJson from "@/content/canned-replies.json";
 import generatedSampleJson from "@/content/generated-sample.json";
+import { isBackendConfigured } from "@/lib/config";
 import type {
   Chapter,
   GeneratedChapterContent,
@@ -58,13 +59,20 @@ export function getAllChapters(): Chapter[] {
 
 /**
  * POST /chapters/:id/messages — mock study-buddy reply.
- * Picks a keyword-matched canned reply, otherwise rotates fallbacks.
+ * Matches keywords only for the current chapter so G10 answers
+ * never appear on G11/G12 lessons (and vice versa).
  */
-export function getMockTutorReply(userMessage: string, messageCount: number): string {
+export function getMockTutorReply(
+  userMessage: string,
+  messageCount: number,
+  chapterId: string,
+): string {
   const { keywordReplies, fallbackReplies } = cannedRepliesJson;
   const lower = userMessage.toLowerCase();
-  const match = keywordReplies.find((entry) =>
-    entry.keywords.some((k) => lower.includes(k.toLowerCase())),
+  const match = keywordReplies.find(
+    (entry) =>
+      entry.chapters.includes(chapterId) &&
+      entry.keywords.some((k) => lower.includes(k.toLowerCase())),
   );
   if (match) return match.reply;
   return fallbackReplies[messageCount % fallbackReplies.length];
@@ -76,7 +84,12 @@ export function getMockTutorReply(userMessage: string, messageCount: number): st
  */
 export async function generateChapterContent(
   subject: SubjectId,
+  chapterId?: string,
 ): Promise<GeneratedChapterContent> {
+  if (isBackendConfigured() && chapterId) {
+    const { generateChapterRemote } = await import("@/lib/api/remote");
+    return generateChapterRemote(chapterId);
+  }
   await new Promise((resolve) => setTimeout(resolve, 1800));
   return generatedSampleJson[subject] as GeneratedChapterContent;
 }

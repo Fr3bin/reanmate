@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getChapter } from "@/lib/api";
+import { getMergedChapter } from "@/lib/catalog-overlay";
 import { getLastVisited, type LastVisited } from "@/lib/progress";
 import { toKhmerNumber } from "@/lib/format";
 
@@ -20,8 +20,17 @@ export default function ContinueCard() {
       setLast(null);
       return;
     }
-    const chapter = getChapter(visit.chapterId);
-    setLast(chapter?.status === "approved" ? visit : null);
+    const chapter = getMergedChapter(visit.chapterId);
+    if (chapter?.status !== "approved") {
+      setLast(null);
+      return;
+    }
+    setLast({
+      chapterId: chapter.id,
+      grade: chapter.grade,
+      subject: chapter.subject,
+      title: chapter.title,
+    });
   }, []);
 
   if (!last?.chapterId || !last.title) return null;

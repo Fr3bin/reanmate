@@ -39,7 +39,7 @@ This document is intended for:
 - Content volume target: **3 chapters per subject per grade** → **18 chapters total**
 - Per chapter: MoEYS video embed with credit, AI-generated summary (admin-approved), ReanMate (មិត្ត AI) chat, MCQ quiz
 - Roles: **Student** and **Admin** only
-- Hosting: **Vercel** (application) + **Supabase** (auth and database)
+- Hosting: **Vercel** (application) + **Node.js + MongoDB** (auth and database; teammate backend)
 - Deployment purpose: **demo** (not large-scale production)
 
 **Out of scope (this version):**
@@ -60,7 +60,7 @@ This document is intended for:
 | MoEYS | Ministry of Education, Youth and Sport (Cambodia) |
 | ReanMate | This product; the in-app conversational study buddy (មិត្ត AI), not a teacher |
 | MCQ | Multiple-choice question |
-| RLS | Row Level Security (Supabase/Postgres) |
+| JWT | JSON Web Token used for API auth after login |
 | TTS | Text-to-speech |
 | Chapter | One lesson unit under a grade + subject |
 | Approved content | Chapter/quiz content visible to students after admin approval |
@@ -70,7 +70,7 @@ This document is intended for:
 
 - Cambodia upper-secondary textbook content (Mathematics, History) — PDF sources held by the project owner
 - MoEYS free teaching video platform — embed URLs and credit text *(details TBD; see Assumptions)*
-- Planned stack documentation: Next.js, Supabase, Vercel
+- Planned stack documentation: Next.js, Node.js, MongoDB, Vercel
 
 ### 1.5 Overview of this document
 
@@ -91,9 +91,9 @@ ReanMate is a new standalone web system. It complements (does not replace) MoEYS
 
 ```text
 [Student device] → [ReanMate on Vercel]
-                        ├─ Supabase (Auth, DB)
+                        ├─ Node.js + MongoDB API (Auth, DB)
                         ├─ AI provider API (study-buddy chat + content generation)
-                        └─ MoEYS video embed (third-party content)
+                        └─ MoEYS / textbook-aligned video embed (third-party content)
 ```
 
 ### 2.2 Problem statement
@@ -130,11 +130,11 @@ No teacher, parent, or school-admin roles in this version.
 | UI language | **Khmer only** (student and admin UI) |
 | SRS language | English (this document) |
 | Server | Vercel-hosted Next.js application |
-| Data/Auth | Supabase project |
+| Data/Auth | Node.js + MongoDB API |
 
 ### 2.6 Design and implementation constraints
 
-- Stack: **Next.js** + **Supabase** + **Vercel**
+- Stack: **Next.js** + **Node.js / MongoDB** + **Vercel**
 - AI keys only on the server; provider abstracted so Gemini/OpenAI (or similar) can be swapped
 - MoEYS content remains owned by the original source; app must show **credit** and use allowed embed
 - Demo scale only; no school privacy policy mandated for this internship demo (still minimize collected data)
@@ -263,8 +263,8 @@ Requirements use IDs for traceability (e.g. FR-AUTH-01).
 
 | ID | Requirement |
 |----|-------------|
-| NFR-SEC-01 | Authentication shall use Supabase Auth (email/password). |
-| NFR-SEC-02 | Authorization shall enforce role separation (student vs admin) via server checks and database RLS. |
+| NFR-SEC-01 | Authentication shall use email/password against the Node.js API, returning a JWT. |
+| NFR-SEC-02 | Authorization shall enforce role separation (student vs admin) via server checks on the API. |
 | NFR-SEC-03 | AI provider API keys shall never be exposed to the browser. |
 | NFR-SEC-04 | Students may only read/write their own chat history, quiz attempts, and progress. |
 
@@ -303,8 +303,8 @@ Requirements use IDs for traceability (e.g. FR-AUTH-01).
 
 | Interface | Purpose |
 |-----------|---------|
-| Supabase Auth | Registration and session management |
-| Supabase Postgres | Persistent application data + RLS |
+| Node.js auth (`POST /auth/login`, `/auth/signup`) | Registration and session (JWT) |
+| MongoDB collections | Persistent application data (users, chapters, chat, progress) |
 | AI provider API | ReanMate chat; admin content generation; optional quiz explanation assist |
 | MoEYS video platform | Embedded lesson videos (iframe/embed) |
 
@@ -342,7 +342,7 @@ Requirements use IDs for traceability (e.g. FR-AUTH-01).
 
 | ID | Assumption |
 |----|------------|
-| AS-01 | MoEYS (or the official platform) **allows embedding** their teaching videos in a third-party web app when proper **credit** and original-source acknowledgment are shown. Exact embed URL format and required credit wording are **TBD** before implementation. |
+| AS-01 | MoEYS (or the official platform) **allows embedding** their teaching videos in a third-party web app when proper **credit** and original-source acknowledgment are shown. Demo chapters currently embed YouTube lessons (MoEYS / EBC / textbook-aligned) with credit under the player. |
 | AS-02 | Project owner has Grade 10–12 Mathematics and History textbook PDFs to paste chapter source text. |
 | AS-03 | Browser TTS Khmer quality varies by device/OS; Listen is best-effort. |
 | AS-04 | Demo users have internet access and a modern browser (Chrome preferred). |
@@ -351,15 +351,15 @@ Requirements use IDs for traceability (e.g. FR-AUTH-01).
 ### 7.2 Dependencies
 
 - Vercel hosting account
-- Supabase project
-- AI provider API key and quota sufficient for demo
-- MoEYS embed URLs for each of the 18 chapters
+- Node.js + MongoDB backend (teammate) matching `docs/API-CONTRACT.md`
+- AI provider API key and quota sufficient for demo (server-side only)
+- Lesson video embeds for remaining chapters toward the 18-chapter target
 
 ### 7.3 Open issues
 
 | ID | Issue | Impact |
 |----|--------|--------|
-| OI-01 | Confirm MoEYS embed policy, URL pattern, and mandatory credit text | Blocks final chapter publishing |
+| OI-01 | Confirm embed policy for remaining chapters; demo chapters already have credited YouTube URLs | Remaining 18-chapter volume |
 | OI-02 | Product name locked as **ReanMate** (មិត្ត AI / study buddy) | UI and docs aligned |
 | OI-03 | Choose initial AI provider (Gemini vs OpenAI) while keeping swappable design | Implementation detail |
 | OI-04 | Math formula rendering (plain text vs KaTeX) if Grade 10–12 math needs rich notation | UX for Math chapters |
@@ -378,7 +378,7 @@ The version is acceptable for internship demo review when all of the following a
 6. **Admin:** Admin can paste source text, generate summary + MCQs, edit, leave draft hidden, approve to publish.
 7. **Disclaimer:** AI mistake notice is visible in the learning UI.
 8. **Access:** Layout works on a phone-width and desktop-width viewport in Chrome.
-9. **Hosting:** App deployed on Vercel with Supabase backend for the demo.
+9. **Hosting:** App deployed on Vercel, talking to the Node.js + MongoDB API for the demo.
 
 **Primary success metric (product goal for this version):** Support **grades 10–12**, **Mathematics and History**, with **3 chapters per subject per grade** (18 chapters), delivering personal AI explanation after MoEYS videos plus quiz practice.
 
@@ -429,6 +429,7 @@ The version is acceptable for internship demo review when all of the following a
 | Version | Date | Author | Notes |
 |---------|------|--------|-------|
 | 1.0 | *(fill in)* | *(fill in)* | Initial SRS for internship mentor review |
+| 1.1 | 2026-09-09 | | Backend stack corrected to Node.js + MongoDB; demo chapter videos noted |
 
 ---
 

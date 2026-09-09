@@ -2,7 +2,7 @@
 
 Web app for Cambodian grade 10–12 students to study **Mathematics** and
 **History** in Khmer — aligned with MoEYS textbook chapters. Per chapter:
-watch the official MoEYS video, ask **ReanMate** (មិត្ត AI — a study buddy,
+watch a curriculum-aligned lesson video, ask **ReanMate** (មិត្ត AI — a study buddy,
 not a teacher), then take an MCQ quiz with explanations.
 
 **Status:** frontend-only demo. All data is mocked; the Node.js + MongoDB
@@ -23,6 +23,17 @@ Open http://localhost:3000, then use **បន្តជាសិស្ស** (stud
 npm run build
 npm start
 ```
+
+## Deploy (Vercel)
+
+This is a standard Next.js App Router app. Deploy the **frontend** branch, or merge it to `main` first.
+
+1. Import [Fr3bin/reanmate](https://github.com/Fr3bin/reanmate) in [Vercel](https://vercel.com/new).
+2. Framework preset: **Next.js**. Build command `npm run build`; output is automatic.
+3. Leave **`NEXT_PUBLIC_API_URL` unset** so the public demo stays mocked (skip-login, canned chat, localStorage catalog).
+4. After the backend exists, set `NEXT_PUBLIC_API_URL` to the API base with no trailing slash, e.g. `https://api.example.com/api`.
+
+No other env vars or secrets are required for the demo.
 
 ## Stack
 
@@ -51,19 +62,21 @@ docs/                   # SRS, UI design brief, API contract
 
 ## Demo content
 
-Grade 10 only for now: 1 Math chapter (អនុគមន៍) + 1 History chapter
-(អាណាចក្រហ្វូណន), each with a 5-question quiz. Structure supports
-3 chapters × 2 subjects × 3 grades (18 chapters).
+Grade 10–12 demo chapters (Math + History). Each chapter has a lesson video,
+summary, ReanMate chat, and a 5-question quiz. Structure still supports up to
+3 chapters × 2 subjects × 3 grades (18).
 
 ## Backend handoff
 
-When the Node.js + MongoDB API is ready, **do not rewrite the UI**. Swap only:
+Set `NEXT_PUBLIC_API_URL` (see `.env.example`) when the Node.js + MongoDB API
+is running. Login, signup, ReanMate chat, and admin generate will then call
+the endpoints in [docs/API-CONTRACT.md](docs/API-CONTRACT.md).
 
-1. **`lib/api/index.ts`** — replace mock JSON reads with `fetch` calls that match
-   [docs/API-CONTRACT.md](docs/API-CONTRACT.md). Keep the exported function
-   names and return types in `lib/types.ts`.
-2. **`lib/progress.ts`** — move quiz scores, last-visited chapter, and chat
-   history from `localStorage` to authenticated API calls.
+Until that URL is set, the demo stays mocked:
+
+1. **`lib/api/index.ts`** — catalog still reads `content/*.json`.
+2. **`lib/progress.ts`** — quiz scores and chat history stay in `localStorage`.
+3. Skip buttons on `/login` still work for frontend review.
 
 Student skip-login: `/login` → **បន្តជាសិស្ស** → `/home`.  
 Admin skip-login: `/login` → **បន្តជា Admin** → `/admin`.
@@ -88,27 +101,27 @@ Open http://localhost:3000 in **Chrome**.
 
 1. Landing → **ចាប់ផ្តើមរៀន**
 2. Login page → **បន្តជាសិស្ស** (skip real auth)
-3. Home → **ថ្នាក់ទី១០** → **គណិតវិទ្យា** or **ប្រវត្តិវិទ្យា**
-4. Open a chapter → video placeholder + summary → **សួរមិត្ត AI**
+3. Home → pick **ថ្នាក់ទី១០ / ១១ / ១២** → **គណិតវិទ្យា** or **ប្រវត្តិវិទ្យា**
+4. Open a chapter → lesson video (MoEYS curriculum / EBC) + summary → **សួរមិត្ត AI**
 5. **ចាប់ផ្តើមតេស្ត** → answer all questions → finish (pass at ≥ 70%)
 
-Demo chapters: Grade 10 Math (**អនុគមន៍**) and Grade 10 History (**អាណាចក្រហ្វូណន**). Grades 11–12 show an empty “coming soon” state on purpose.
+Demo chapters: **18** approved lessons (3 per subject × 2 subjects × 3 grades). Ten have matching EBC YouTube lessons (same grade and topic). Eight show a placeholder when no matching public clip exists.
 
 ### Admin flow to click through
 
 1. Landing → login → **បន្តជា Admin**
 2. Chapter list → **កែសម្រួល** or **បង្កើតមេរៀនថ្មី**
 3. Paste any source text → **បង្កើតដោយ AI** (mocked delay + sample content)
-4. Save draft or approve — the notice is UI-only; it does not write a database yet
+4. Save draft or approve — stored in this browser (`localStorage`) until the API exists
 
 ### What is mocked (on purpose)
 
 | Area | Current behavior |
 |------|------------------|
-| Login | Form shows a notice; use the skip buttons |
-| ReanMate chat | Canned Khmer replies from `content/canned-replies.json` |
-| Admin generate | Fake delay, then `content/generated-sample.json` |
-| Progress / chat history | `localStorage` only |
-| MoEYS video | Placeholder until embed URLs are added |
+| Login | Skip buttons always work. Email form calls the API only if `NEXT_PUBLIC_API_URL` is set |
+| ReanMate chat | Canned replies unless the API URL is set |
+| Admin generate | Fake sample unless the API URL is set and the chapter already has an id |
+| Progress / chat / admin drafts | `localStorage` only |
+| Lesson video | YouTube embeds where a public clip is available; otherwise the existing placeholder |
 
 Please review UI, Khmer copy, and user flow. Backend work should follow [docs/API-CONTRACT.md](docs/API-CONTRACT.md).

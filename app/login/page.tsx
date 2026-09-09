@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ApiError } from "@/lib/api/http";
+import { loginRemote, signupRemote } from "@/lib/api/remote";
+import { homePathForRole, setSession, skipAs } from "@/lib/auth";
+import { isBackendConfigured } from "@/lib/config";
 import Mascot from "@/components/Mascot";
 import SiteNavbar from "@/components/SiteNavbar";
 import { useToast } from "@/components/ToastProvider";
@@ -13,8 +17,10 @@ type AuthTab = "login" | "signup";
 
 export default function LoginPage() {
   const [tab, setTab] = useState<AuthTab>("login");
+  const [busy, setBusy] = useState(false);
   const router = useRouter();
   const toast = useToast();
+  const backendReady = isBackendConfigured();
 
   useEffect(() => {
     if (window.location.hash === "#signup") setTab("signup");
@@ -43,7 +49,7 @@ export default function LoginPage() {
               <span className="mt-1 block text-gold">ជាមួយមិត្ត AI</span>
             </h2>
             <ul className="mt-8 space-y-3 text-sm text-white/70">
-              <li>មើលវីដេអូ MoEYS តាមមេរៀន</li>
+              <li>មើលវីដេអូមេរៀន តាមកម្មវិធីសិក្សា</li>
               <li>សួរ AI បើមានចំណុចមិនយល់</li>
               <li>ធ្វើតេស្ត មានការពន្យល់</li>
             </ul>
@@ -59,20 +65,28 @@ export default function LoginPage() {
               {tab === "login" ? "ចូលគណនី" : "ចុះឈ្មោះ"}
             </h1>
             <p className="mt-1 text-center text-sm text-ink-muted">
-              សាកល្បងឥឡូវនេះ — មិនចាំបាច់បង្កើតគណនី
+              {backendReady
+                ? "ចូលដោយអ៊ីមែល ឬសាកល្បងដោយមិនចាំបាច់គណនី"
+                : "សាកល្បងឥឡូវនេះ — មិនចាំបាច់បង្កើតគណនី"}
             </p>
 
             <div className="mt-7 flex flex-col gap-3">
               <button
                 type="button"
-                onClick={() => router.replace("/home")}
+                onClick={() => {
+                  skipAs("student");
+                  router.replace(homePathForRole("student"));
+                }}
                 className="ui-btn min-h-11 rounded-xl bg-cta py-2.5 text-center font-semibold text-white hover:bg-cta-dark"
               >
                 បន្តជាសិស្ស
               </button>
               <button
                 type="button"
-                onClick={() => router.replace("/admin")}
+                onClick={() => {
+                  skipAs("admin");
+                  router.replace(homePathForRole("admin"));
+                }}
                 className="ui-btn min-h-11 rounded-xl border border-primary/20 py-2.5 text-center font-semibold text-primary hover:bg-primary-light"
               >
                 បន្តជា Admin
@@ -113,9 +127,31 @@ export default function LoginPage() {
             {tab === "login" ? (
               <form
                 className="flex flex-col gap-4"
-                onSubmit={(event) => {
+                onSubmit={async (event) => {
                   event.preventDefault();
-                  toast.info(BACKEND_NOTICE);
+                  const data = new FormData(event.currentTarget);
+                  const email = String(data.get("email") ?? "").trim();
+                  const password = String(data.get("password") ?? "");
+                  if (!email || !password) {
+                    toast.error("សូមបំពេញអ៊ីមែល និងពាក្យសម្ងាត់។");
+                    return;
+                  }
+                  if (!backendReady) {
+                    toast.info(BACKEND_NOTICE);
+                    return;
+                  }
+                  setBusy(true);
+                  try {
+                    const { token, user } = await loginRemote(email, password);
+                    setSession(token, user);
+                    router.replace(homePathForRole(user.role));
+                  } catch (error) {
+                    toast.error(
+                      error instanceof ApiError ? error.message : "មិនអាចចូលបានទេ។",
+                    );
+                  } finally {
+                    setBusy(false);
+                  }
                 }}
               >
                 <label className="text-sm font-medium">
@@ -140,24 +176,52 @@ export default function LoginPage() {
                 </label>
                 <button
                   type="submit"
-                  className="ui-btn min-h-11 rounded-xl bg-primary py-2.5 font-semibold text-white hover:bg-primary-dark"
+                  disabled={busy}
+                  className="ui-btn min-h-11 rounded-xl bg-primary py-2.5 font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
                 >
-                  ចូល
+                  {busy ? "កំពុងចូល…" : "ចូល"}
                 </button>
               </form>
             ) : (
               <form
                 className="flex flex-col gap-4"
-                onSubmit={(event) => {
+                onSubmit={async (event) => {
                   event.preventDefault();
                   const data = new FormData(event.currentTarget);
+                  const displayName = String(data.get("displayName") ?? "").trim();
+                  const email = String(data.get("email") ?? "").trim();
                   const password = String(data.get("password") ?? "");
                   const confirm = String(data.get("confirm") ?? "");
                   if (password !== confirm) {
                     toast.error("ពាក្យសម្ងាត់ទាំងពីរមិនដូចគ្នាទេ។");
                     return;
                   }
-                  toast.info(BACKEND_NOTICE);
+                  if (!email || !password) {
+                    toast.error("សូមបំពេញអ៊ីមែល និងពាក្យសម្ងាត់។");
+                    return;
+                  }
+                  if (!backendReady) {
+                    toast.info(BACKEND_NOTICE);
+                    return;
+                  }
+                  setBusy(true);
+                  try {
+                    const { token, user } = await signupRemote(
+                      email,
+                      password,
+                      displayName || undefined,
+                    );
+                    setSession(token, user);
+                    router.replace(homePathForRole(user.role));
+                  } catch (error) {
+                    toast.error(
+                      error instanceof ApiError
+                        ? error.message
+                        : "មិនអាចបង្កើតគណនីបានទេ។",
+                    );
+                  } finally {
+                    setBusy(false);
+                  }
                 }}
               >
                 <label className="text-sm font-medium">
@@ -202,9 +266,10 @@ export default function LoginPage() {
                 </label>
                 <button
                   type="submit"
-                  className="ui-btn min-h-11 rounded-xl bg-primary py-2.5 font-semibold text-white hover:bg-primary-dark"
+                  disabled={busy}
+                  className="ui-btn min-h-11 rounded-xl bg-primary py-2.5 font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
                 >
-                  បង្កើតគណនី
+                  {busy ? "កំពុងបង្កើត…" : "បង្កើតគណនី"}
                 </button>
               </form>
             )}

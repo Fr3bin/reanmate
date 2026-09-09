@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { generateChapterContent } from "@/lib/api";
+import { ApiError } from "@/lib/api/http";
+import { nextLocalChapterId, upsertChapter } from "@/lib/catalog-overlay";
 import { toKhmerNumber } from "@/lib/format";
 import { useToast } from "@/components/ToastProvider";
 import type { Chapter, Grade, SubjectId } from "@/lib/types";
@@ -14,10 +17,12 @@ interface EditableQuestion {
 }
 
 /**
- * Single long-form editor: metadata → MoEYS → source text → Generate →
- * review summary/MCQs → approve. Saving is mocked until the backend exists.
+ * Single long-form editor: metadata → video → source text → Generate →
+ * review summary/MCQs → approve. Saves to a localStorage overlay until the API exists.
  */
 export default function ChapterEditor({ chapter }: { chapter: Chapter | null }) {
+  const router = useRouter();
+  const [chapterId, setChapterId] = useState(chapter?.id ?? null);
   const [grade, setGrade] = useState(chapter?.grade ?? 10);
   const [subject, setSubject] = useState<SubjectId>(chapter?.subject ?? "math");
   const [title, setTitle] = useState(chapter?.title ?? "");
@@ -25,7 +30,7 @@ export default function ChapterEditor({ chapter }: { chapter: Chapter | null }) 
   const [embedUrl, setEmbedUrl] = useState(chapter?.moeysEmbedUrl ?? "");
   const [credit, setCredit] = useState(
     chapter?.moeysCredit ??
-      "វីដេអូមេរៀនផលិតដោយ ក្រសួងអប់រំ យុវជន និងកីឡា (MoEYS)។ ខ្លឹមសារដើមជាកម្មសិទ្ធិរបស់ក្រសួង។",
+      "វីដេអូមេរៀនស្របតាមកម្មវិធីសិក្សារបស់ក្រសួងអប់រំ យុវជន និងកីឡា (MoEYS) ផលិតដោយ Educational Broadcasting Cambodia (EBC)។ ខ្លឹមសារដើមជាកម្មសិទ្ធិរបស់ប្រភពដើម។",
   );
   const [sourceText, setSourceText] = useState(chapter?.sourceText ?? "");
   const [summary, setSummary] = useState(chapter?.summary ?? "");
@@ -52,11 +57,18 @@ export default function ChapterEditor({ chapter }: { chapter: Chapter | null }) 
       return;
     }
     setGenerating(true);
-    const generated = await generateChapterContent(subject);
-    setSummary(generated.summary);
-    setQuestions(generated.questions.map((q) => ({ ...q, options: [...q.options] })));
-    setGenerating(false);
-    toast.success("បានបង្កើតសង្ខេប និងសំណួរ។ សូមពិនិត្យខាងក្រោម។");
+    try {
+      const generated = await generateChapterContent(subject, chapter?.id);
+      setSummary(generated.summary);
+      setQuestions(generated.questions.map((q) => ({ ...q, options: [...q.options] })));
+      toast.success("បានបង្កើតសង្ខេប និងសំណួរ។ សូមពិនិត្យខាងក្រោម។");
+    } catch (error) {
+      toast.error(
+        error instanceof ApiError ? error.message : "មិនអាចបង្កើតមាតិកាបានទេ។",
+      );
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const updateQuestion = (
@@ -75,11 +87,36 @@ export default function ChapterEditor({ chapter }: { chapter: Chapter | null }) 
         return;
       }
     }
+    const id = chapterId ?? nextLocalChapterId(grade, subject);
+    const saved: Chapter = {
+      id,
+      grade,
+      subject,
+      title: title.trim() || "មេរៀនគ្មានចំណងជើង",
+      sortOrder,
+      summary,
+      sourceText,
+      moeysEmbedUrl: embedUrl.trim(),
+      moeysCredit: credit,
+      status: nextStatus,
+      questions: questions.map((question, index) => ({
+        id: chapter?.questions[index]?.id ?? `${id}-q${index + 1}`,
+        chapterId: id,
+        prompt: question.prompt,
+        options: question.options,
+        correctIndex: question.correctIndex,
+        explanation: question.explanation,
+        sortOrder: index + 1,
+      })),
+    };
+    upsertChapter(saved);
+    setChapterId(id);
     setStatus(nextStatus);
+    if (!chapterId) {
+      router.replace(`/admin/chapters/${id}`);
+    }
     toast.success(
-      nextStatus === "approved"
-        ? "បានអនុម័ត (សាកល្បង — ការរក្សាទុកពិតប្រាកដនឹងភ្ជាប់ជាមួយម៉ាស៊ីនមេ)"
-        : "បានរក្សាទុកជាព្រាង (សាកល្បង)",
+      nextStatus === "approved" ? "បានអនុម័ត និងរក្សាទុក។" : "បានរក្សាទុកជាព្រាង។",
     );
   };
 
@@ -139,7 +176,7 @@ export default function ChapterEditor({ chapter }: { chapter: Chapter | null }) 
 
       {/* 2. MoEYS video */}
       <section className="ui-card p-5">
-        <h2 className="font-bold text-primary">២. វីដេអូ MoEYS</h2>
+        <h2 className="font-bold text-primary">២. វីដេអូមេរៀន</h2>
         <div className="mt-4 flex flex-col gap-4">
           <label className="text-sm font-medium">
             Embed URL

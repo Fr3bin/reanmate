@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Kantumruy_Pro } from "next/font/google";
 import Providers from "@/components/Providers";
 import "./globals.css";
+import "katex/dist/katex.min.css";
 
 const kantumruy = Kantumruy_Pro({
   subsets: ["khmer", "latin"],
@@ -19,7 +20,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "ReanMate — មិត្ត AI សម្រាប់សិស្សថ្នាក់ទី១០ ដល់ទី១២",
   description:
-    "រៀនគណិតវិទ្យា និងប្រវត្តិវិទ្យា តាមកម្មវិធីសិក្សារបស់ក្រសួងអប់រំ។ មើលវីដេអូ MoEYS សួរ AI ជាភាសាខ្មែរ រួចធ្វើតេស្ត។",
+    "រៀនគណិតវិទ្យា និងប្រវត្តិវិទ្យា តាមកម្មវិធីសិក្សារបស់ក្រសួងអប់រំ។ មើលវីដេអូមេរៀន សួរ AI ជាភាសាខ្មែរ រួចធ្វើតេស្ត។",
   icons: {
     icon: [{ url: "/favicon.png", sizes: "32x32", type: "image/png" }],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],

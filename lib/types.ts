@@ -49,6 +49,20 @@ export interface Chapter {
   questions: Question[];
 }
 
+export type UserRole = "student" | "admin";
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  role: UserRole;
+  displayName?: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: AuthUser;
+}
+
 export type ChatRole = "user" | "assistant";
 
 export interface ChatMessage {

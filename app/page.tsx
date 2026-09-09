@@ -31,7 +31,7 @@ export default function LandingPage() {
                 <span className="gold-mark mt-1 block text-gold">តាមសៀវភៅក្រសួង</span>
               </h1>
               <p className="rise d2 mx-auto mt-5 max-w-md text-[1.05rem] leading-relaxed text-white/78 lg:mx-0">
-                មើលវីដេអូ MoEYS សួរ AI ពេលមិនយល់ រួចធ្វើតេស្ត —
+                មើលវីដេអូមេរៀន តាមកម្មវិធីសិក្សា សួរ AI ពេលមិនយល់ រួចធ្វើតេស្ត —
                 សម្រាប់សិស្សថ្នាក់ទី១០ ដល់ទី១២។
               </p>
 
@@ -52,7 +52,7 @@ export default function LandingPage() {
               <div className="rise d4 mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-white/55 lg:justify-start">
                 <span>ភាសាខ្មែរ</span>
                 <span className="h-1 w-1 rounded-full bg-gold/70" />
-                <span>វីដេអូ MoEYS</span>
+                <span>វីដេអូមេរៀន</span>
                 <span className="h-1 w-1 rounded-full bg-gold/70" />
                 <span>តេស្ត + ការពន្យល់</span>
               </div>
@@ -88,7 +88,7 @@ export default function LandingPage() {
                           <span className="play-pulse flex h-11 w-11 items-center justify-center rounded-full border border-gold/60 text-gold">
                             ▶
                           </span>
-                          <p className="mt-2 text-[11px] text-white/55">វីដេអូ MoEYS</p>
+                          <p className="mt-2 text-[11px] text-white/55">វីដេអូមេរៀន</p>
                         </div>
                         <p className="mt-2 text-[11px] text-ink-muted">
                           ប្រភព៖ ក្រសួងអប់រំ យុវជន និងកីឡា
@@ -135,8 +135,8 @@ export default function LandingPage() {
             {[
               {
                 step: "០១",
-                title: "មើលវីដេអូ MoEYS",
-                body: "វីដេអូមេរៀនផ្លូវការពីក្រសួងអប់រំ តាមជំពូកសៀវភៅសិក្សា",
+                title: "មើលវីដេអូមេរៀន",
+                body: "វីដេអូមេរៀនតាមកម្មវិធីសិក្សា និងសៀវភៅក្រសួង តាមជំពូក",
               },
               {
                 step: "០២",
@@ -197,7 +197,7 @@ export default function LandingPage() {
 
       <footer className="bg-primary-dark px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))] text-center text-sm text-white/60">
         <p>
-          ReanMate អាចមានកំហុស។ សូមពិនិត្យជាមួយវីដេអូ MoEYS
+          ReanMate អាចមានកំហុស។ សូមពិនិត្យជាមួយវីដេអូមេរៀន
           និងសៀវភៅសិក្សា។
         </p>
         <p className="mt-3 text-xs text-white/35">© {new Date().getFullYear()} ReanMate</p>

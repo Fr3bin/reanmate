@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { isChapterCompleted } from "@/lib/progress";
 import { toKhmerNumber } from "@/lib/format";
+import { youtubeThumbUrl } from "@/lib/youtube";
 import type { Chapter } from "@/lib/types";
 
 export default function ChapterCard({ chapter }: { chapter: Chapter }) {
   const [completed, setCompleted] = useState(false);
+  const thumb = youtubeThumbUrl(chapter.moeysEmbedUrl);
 
   useEffect(() => {
     setCompleted(isChapterCompleted(chapter.id));
@@ -18,16 +20,38 @@ export default function ChapterCard({ chapter }: { chapter: Chapter }) {
       href={`/learn/${chapter.grade}/${chapter.subject}/${chapter.id}`}
       className="ui-card group overflow-hidden"
     >
-      <div className="relative flex aspect-[16/8] items-end bg-primary-dark px-4 py-3">
+      <div
+        className={`relative flex aspect-[16/8] items-end overflow-hidden px-4 py-3 ${
+          chapter.subject === "math" ? "bg-primary-dark" : "bg-[#5c2e2e]"
+        }`}
+      >
+        {thumb ? (
+          <img
+            src={thumb}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        ) : null}
+        <div
+          className={`absolute inset-0 ${
+            thumb
+              ? "bg-gradient-to-t from-black/70 via-black/20 to-black/10"
+              : chapter.subject === "math"
+                ? "bg-gradient-to-br from-primary-dark to-primary"
+                : "bg-gradient-to-br from-[#5c2e2e] to-[#8a4545]"
+          }`}
+        />
         {completed ? (
-          <span className="absolute left-4 top-4 rounded-full bg-success px-2.5 py-0.5 text-[10px] font-semibold text-white">
+          <span className="absolute left-4 top-4 z-10 rounded-full bg-success px-2.5 py-0.5 text-[10px] font-semibold text-white">
             បានបញ្ចប់
           </span>
         ) : null}
-        <span className="absolute right-4 top-4 text-4xl text-white/12">
+        <span className="absolute right-4 top-4 z-10 text-4xl text-white/25">
           {chapter.subject === "math" ? "គ" : "ប"}
         </span>
-        <p className="text-xs font-semibold text-gold">មេរៀនទី{toKhmerNumber(chapter.sortOrder)}</p>
+        <p className="relative z-10 text-xs font-semibold text-gold">
+          មេរៀនទី{toKhmerNumber(chapter.sortOrder)}
+        </p>
       </div>
 
       <div className="p-4">

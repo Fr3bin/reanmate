@@ -41,7 +41,7 @@ export default function HomeHero() {
           <p className="mt-2 max-w-lg text-sm text-white/70">
             {ready && completed > 0
               ? `បានរៀនចប់មេរៀន ${toKhmerNumber(completed)} ហើយ។ បន្តមេរៀនបន្ទាប់បាន។`
-              : "មើលវីដេអូ សួរ AI បើមិនយល់ រួចធ្វើតេស្ត។ ចាប់ផ្ដើមពីថ្នាក់ទី១០។"}
+              : "មើលវីដេអូ សួរ AI បើមិនយល់ រួចធ្វើតេស្ត។ មានមេរៀនថ្នាក់ទី១០ ដល់ទី១២។"}
           </p>
           <div className="mt-4 flex flex-wrap gap-2 text-[11px] text-white/55">
             <span className="rounded-full bg-white/10 px-2.5 py-1">០១ មើលវីដេអូ</span>

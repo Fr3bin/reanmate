@@ -5,13 +5,24 @@ import { useEffect, useState } from "react";
 import ChatPanel from "@/components/ChatPanel";
 import ListenButton from "@/components/ListenButton";
 import Mascot from "@/components/Mascot";
+import MathText from "@/components/MathText";
 import StudySteps from "@/components/StudySteps";
 import VideoEmbed from "@/components/VideoEmbed";
 import { setLastVisited } from "@/lib/progress";
+import { AI_DISCLAIMER } from "@/lib/copy";
 import type { Chapter } from "@/lib/types";
 
 export default function ChapterStudy({ chapter }: { chapter: Chapter }) {
   const [chatOpen, setChatOpen] = useState(false);
+  const [wide, setWide] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setWide(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   useEffect(() => {
     setLastVisited({
@@ -98,8 +109,11 @@ export default function ChapterStudy({ chapter }: { chapter: Chapter }) {
             <h2 className="text-sm font-semibold text-primary">សង្ខេបមេរៀន</h2>
             <ListenButton text={chapter.summary} />
           </div>
-          <p className="whitespace-pre-line px-5 py-4 text-[15px] leading-relaxed">
-            {chapter.summary}
+          <p className="px-5 py-4 text-[15px] leading-relaxed">
+            <MathText text={chapter.summary} />
+          </p>
+          <p className="border-t border-line px-5 py-3 text-xs leading-relaxed text-ink-muted">
+            {AI_DISCLAIMER}
           </p>
         </section>
 
@@ -115,13 +129,18 @@ export default function ChapterStudy({ chapter }: { chapter: Chapter }) {
         </div>
       </div>
 
-      <aside id="ask-ai" className="sticky top-[calc(5rem+env(safe-area-inset-top))] hidden h-[calc(100vh-8.5rem-env(safe-area-inset-top))] lg:block">
-        <ChatPanel chapterId={chapter.id} subject={chapter.subject} />
-      </aside>
+      {wide === true ? (
+        <aside
+          id="ask-ai"
+          className="sticky top-[calc(5rem+env(safe-area-inset-top))] h-[calc(100vh-8.5rem-env(safe-area-inset-top))]"
+        >
+          <ChatPanel chapterId={chapter.id} subject={chapter.subject} />
+        </aside>
+      ) : null}
 
-      {!chatOpen ? (
+      {wide === false && !chatOpen ? (
       <div
-        className="fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t border-line bg-surface/95 p-3 backdrop-blur-md lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t border-line bg-surface/95 p-3 backdrop-blur-md"
         style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
       >
         <button
@@ -143,8 +162,8 @@ export default function ChapterStudy({ chapter }: { chapter: Chapter }) {
       </div>
       ) : null}
 
-      {chatOpen ? (
-        <div className="fixed inset-0 z-50 lg:hidden">
+      {wide === false && chatOpen ? (
+        <div className="fixed inset-0 z-50">
           <button
             type="button"
             aria-label="បិទ"

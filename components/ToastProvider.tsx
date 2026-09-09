@@ -59,16 +59,19 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setToasts((prev) => [...prev.slice(-2), toast]);
   }, []);
 
+  const success = useCallback((message: string) => {
+    show({ kind: "success", message });
+  }, [show]);
+  const error = useCallback((message: string) => {
+    show({ kind: "error", message });
+  }, [show]);
+  const info = useCallback((message: string) => {
+    show({ kind: "info", message });
+  }, [show]);
+
   const value = useMemo<ToastContextValue>(
-    () => ({
-      toasts,
-      show,
-      dismiss,
-      success: (message) => show({ kind: "success", message }),
-      error: (message) => show({ kind: "error", message }),
-      info: (message) => show({ kind: "info", message }),
-    }),
-    [toasts, show, dismiss],
+    () => ({ toasts, show, dismiss, success, error, info }),
+    [toasts, show, dismiss, success, error, info],
   );
 
   return (
