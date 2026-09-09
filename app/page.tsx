@@ -2,6 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import SiteNavbar from "@/components/SiteNavbar";
+import { youtubePosterUrl } from "@/lib/youtube";
+
+const DEMO_LESSON_POSTER = youtubePosterUrl(
+  "https://www.youtube.com/embed/hs-61FIfVLg",
+);
 
 export default function LandingPage() {
   return (
@@ -75,7 +80,7 @@ export default function LandingPage() {
                   <div className="landing-card-col">
                     <Link
                       href="/login#signup"
-                      className="landing-float block overflow-hidden rounded-2xl bg-white"
+                      className="landing-float group block overflow-hidden rounded-2xl bg-white"
                     >
                       <div className="flex items-center justify-between bg-primary px-4 py-3">
                         <p className="text-sm font-medium text-white/90">
@@ -84,11 +89,35 @@ export default function LandingPage() {
                         <span className="text-[11px] text-gold">ថ្នាក់ទី១០</span>
                       </div>
                       <div className="p-4">
-                        <div className="flex aspect-[16/9] flex-col items-center justify-center rounded-xl bg-primary-dark">
-                          <span className="play-pulse flex h-11 w-11 items-center justify-center rounded-full border border-gold/60 text-gold">
-                            ▶
+                        <div className="landing-poster relative aspect-video overflow-hidden rounded-xl bg-primary-dark">
+                          {DEMO_LESSON_POSTER ? (
+                            <Image
+                              src={DEMO_LESSON_POSTER}
+                              alt=""
+                              fill
+                              sizes="(max-width: 640px) 20rem, 380px"
+                              className="object-cover"
+                            />
+                          ) : null}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/10" />
+                          <span className="absolute left-2.5 top-2.5 rounded-full bg-black/45 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-gold">
+                            EBC
                           </span>
-                          <p className="mt-2 text-[11px] text-white/55">វីដេអូមេរៀន</p>
+                          <span className="landing-play-wrap absolute inset-0 flex items-center justify-center">
+                            <span className="play-pulse flex h-14 w-14 items-center justify-center rounded-full bg-gold text-primary-dark shadow-[0_8px_24px_rgba(0,0,0,0.35)]">
+                              <svg
+                                viewBox="0 0 24 24"
+                                className="ml-0.5 h-6 w-6"
+                                fill="currentColor"
+                                aria-hidden
+                              >
+                                <path d="M8 5.2v13.6L19.2 12 8 5.2z" />
+                              </svg>
+                            </span>
+                          </span>
+                          <p className="absolute inset-x-0 bottom-0 px-3 pb-2.5 pt-8 text-[12px] font-medium leading-snug text-white">
+                            សញ្ញាណនៃអនុគមន៍
+                          </p>
                         </div>
                         <p className="mt-2 text-[11px] text-ink-muted">
                           ប្រភព៖ ក្រសួងអប់រំ យុវជន និងកីឡា

@@ -396,6 +396,22 @@ select:focus {
     0 8px 20px rgba(0, 30, 30, 0.25);
 }
 
+.landing-poster img {
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.landing-float:hover .landing-poster img {
+  transform: scale(1.06);
+}
+
+.landing-play-wrap {
+  transition: transform 0.25s ease;
+}
+
+.landing-float:hover .landing-play-wrap {
+  transform: scale(1.08);
+}
+
 .landing-mascot {
   position: relative;
   z-index: 3;
@@ -646,6 +662,8 @@ select:focus {
   .nav-in,
   .stagger > *,
   .landing-float,
+  .landing-poster img,
+  .landing-play-wrap,
   .msg-in,
   .online-dot,
   .typing-dots span,
@@ -679,6 +697,11 @@ select:focus {
     opacity: 1;
     transform: none;
     transition: none;
+  }
+
+  .landing-float:hover .landing-poster img,
+  .landing-float:hover .landing-play-wrap {
+    transform: none;
   }
 
   .ui-card,

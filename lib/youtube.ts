@@ -17,6 +17,12 @@ export function youtubeThumbUrl(url: string): string | null {
   return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null;
 }
 
+/** 16:9 poster for landing/hero previews. */
+export function youtubePosterUrl(url: string): string | null {
+  const id = youtubeIdFromUrl(url);
+  return id ? `https://i.ytimg.com/vi/${id}/maxresdefault.jpg` : null;
+}
+
 /** Lesson page on EBC (not embeddable; open in a new tab). */
 export function isExternalLessonUrl(url: string): boolean {
   if (!url.trim() || youtubeIdFromUrl(url)) return false;
