@@ -1,6 +1,6 @@
 import Link from "next/link";
 import BrandLogo from "@/components/BrandLogo";
-import LogoutLink from "@/components/LogoutLink";
+import SignOutLink from "@/components/SignOutLink";
 
 type SiteNavbarProps = {
   homeHref?: string;
@@ -8,6 +8,8 @@ type SiteNavbarProps = {
   gradeLabel?: string;
   isAdmin?: boolean;
   homeActive?: boolean;
+  /** Signed-in user's display name, shown next to the sign-out button */
+  userName?: string;
 };
 
 export default function SiteNavbar({
@@ -16,6 +18,7 @@ export default function SiteNavbar({
   gradeLabel,
   isAdmin = false,
   homeActive = false,
+  userName,
 }: SiteNavbarProps) {
   return (
     <header className="nav-in sticky top-0 z-30 border-b border-white/10 bg-primary-dark/95 text-white backdrop-blur-md pt-[env(safe-area-inset-top)]">
@@ -70,7 +73,12 @@ export default function SiteNavbar({
                 ) : null}
               </>
             )}
-            <LogoutLink />
+            {userName ? (
+              <span className="hidden max-w-[9rem] truncate text-sm text-white/70 sm:inline">
+                {userName}
+              </span>
+            ) : null}
+            <SignOutLink />
           </nav>
         ) : null}
 

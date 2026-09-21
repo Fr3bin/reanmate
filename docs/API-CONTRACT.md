@@ -1,21 +1,22 @@
 # ReanMate — API Contract (Frontend ⇄ Node.js/MongoDB Backend)
 
 This document defines the HTTP API the backend team should implement.
-The frontend currently runs fully on mock data; every mock function in
+Authentication is implemented in NestJS with Better Auth and MongoDB. Lesson data remains mocked; every mock function in
 [`lib/api/index.ts`](../lib/api/index.ts) maps 1-to-1 to an endpoint here, and all
 request/response shapes are defined in [`lib/types.ts`](../lib/types.ts).
 
 **Integration rule:** when the backend is ready, only `lib/api/index.ts`
 (and `lib/progress.ts` for persistence) should change — no page/component rewrites.
 
-Base URL: `process.env.NEXT_PUBLIC_API_URL` (e.g. `http://localhost:4000/api`).
+The frontend proxies `/auth/*` to server-only `API_URL` (default `http://localhost:4000`).
+The remaining endpoints below are the planned lesson API.
 
 ---
 
 ## Conventions
 
 - JSON everywhere, UTF-8 (content is Khmer text).
-- Auth: JWT in `Authorization: Bearer <token>` (backend's choice of session model is fine — align before implementing).
+- Auth: Better Auth email/password endpoints with an `httpOnly` session cookie.
 - Errors: `{ "error": { "code": string, "message": string } }` with proper HTTP status.
 - IDs are strings (Mongo `_id` serialized). The mock uses readable ids like `g10-math-c1`; real ids can be ObjectIds.
 
@@ -30,11 +31,17 @@ Base URL: `process.env.NEXT_PUBLIC_API_URL` (e.g. `http://localhost:4000/api`).
 
 | Method | Path | Body | Response |
 |--------|------|------|----------|
-| POST | `/auth/signup` | `{ email, password, displayName? }` | `{ token, user: { id, email, role } }` |
-| POST | `/auth/login` | `{ email, password }` | `{ token, user }` |
-| GET | `/auth/me` | — | `{ user }` |
+| POST | `/auth/sign-up/email` | `{ name, email, password }` | `{ user, token }` + session cookie |
+| POST | `/auth/sign-in/email` | `{ email, password }` | `{ user, token, redirect }` + session cookie |
+| GET | `/auth/get-session` | — | `{ user, session }` or `null` |
+| GET | `/auth/me` | — | `{ user: { id, email, role, displayName } }` or 401 |
+| POST | `/auth/sign-out` | `{}` | `{ success: true }` + cleared cookie |
 
-Password reset is manual (admin edits DB) for the demo — no endpoint needed.
+Self-service password reset and email verification are not enabled. Passwords are
+salted scrypt hashes managed by Better Auth; never replace them with plaintext.
+Registration always assigns `student`; operators can promote a registered account
+with `npm run admin:promote -- email`. Auth errors use Better Auth `{ code, message }`
+or NestJS `{ statusCode, message, error }` shapes. Auth responses are never cached.
 
 ## 2. Catalog (student)
 
@@ -100,7 +107,11 @@ chapter's `sourceText`**. Admin edits then approves via PATCH.
 
 | Collection | Mirrors type | Notes |
 |------------|--------------|-------|
-| `users` | — | `email`, `passwordHash`, `role`, `displayName` |
+| `user` | Better Auth user | `email` (unique), `name`, `role`, timestamps |
+| `account` | Better Auth credential | `userId`, `providerId`, salted password hash |
+| `session` | Better Auth session | unique token, user reference, expiry TTL |
+| `verification` | Better Auth verification | expiry TTL |
+| `rateLimit` | Better Auth rate limiter | per-IP endpoint counters |
 | `chapters` | `Chapter` | embed `questions` array (small, read together) |
 | `chatmessages` | `ChatMessage` | index `{ userId, chapterId, createdAt }` |
 | `quizattempts` | `QuizAttempt` | index `{ userId, chapterId }` |
@@ -112,6 +123,6 @@ chapter's `sourceText`**. Admin edits then approves via PATCH.
 |------------|----------------|
 | `lib/api/index.ts` reads `content/*.json` | `fetch` calls to the endpoints above |
 | `lib/progress.ts` localStorage | `/me/progress`, `/chapters/:id/messages` |
-| Login skip buttons | real `/auth/login` + token storage |
+| Login form | real Better Auth endpoints + httpOnly cookie |
 | Canned ReanMate replies | real AI reply from POST `/messages` |
 | `generateChapterContent()` fake delay | real POST `/admin/chapters/:id/generate` |

@@ -4,7 +4,7 @@
  * Overlay chapters win on id merge with the JSON seed in lib/api.
  */
 
-import { getAllChapters } from "@/lib/api";
+import chaptersJson from "@/content/chapters.json";
 import type { Chapter, Grade, SubjectId } from "@/lib/types";
 
 const OVERLAY_KEY = "reanmate:catalog-overlay";
@@ -33,7 +33,9 @@ export function upsertChapter(chapter: Chapter): void {
   localStorage.setItem(OVERLAY_KEY, JSON.stringify(overlay));
 }
 
-export function mergeCatalog(base: Chapter[] = getAllChapters()): Chapter[] {
+const seedChapters = chaptersJson as Chapter[];
+
+export function mergeCatalog(base: Chapter[] = seedChapters): Chapter[] {
   const overlay = readOverlay();
   const byId = new Map(base.map((chapter) => [chapter.id, chapter]));
   for (const chapter of Object.values(overlay)) {

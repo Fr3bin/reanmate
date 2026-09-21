@@ -1,33 +1,90 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ApiError } from "@/lib/api/http";
-import { loginRemote, signupRemote } from "@/lib/api/remote";
-import { homePathForRole, setSession, skipAs } from "@/lib/auth";
-import { isBackendConfigured } from "@/lib/config";
 import Mascot from "@/components/Mascot";
 import SiteNavbar from "@/components/SiteNavbar";
 import { useToast } from "@/components/ToastProvider";
+import {
+  authErrorMessage,
+  getSession,
+  login,
+  resetPassword,
+  sendPasswordResetCode,
+  signup,
+  signInWithGoogle,
+} from "@/lib/api/auth";
+import { destinationAfterLogin } from "@/lib/auth-user";
 
-const BACKEND_NOTICE =
-  "ម៉ាស៊ីនមេមិនទាន់ភ្ជាប់ទេ។ សូមប្រើ «បន្តជាសិស្ស» ឬ «បន្តជា Admin» ដើម្បីសាកល្បង។";
-
-type AuthTab = "login" | "signup";
+type Step = "email" | "reset-email" | "reset-code";
+type AuthMode = "signin" | "signup";
 
 export default function LoginPage() {
-  const [tab, setTab] = useState<AuthTab>("login");
-  const [busy, setBusy] = useState(false);
-  const router = useRouter();
+  const [step, setStep] = useState<Step>("email");
+  const [mode, setMode] = useState<AuthMode>("signin");
+  const [email, setEmail] = useState("");
+  const [pending, setPending] = useState(false);
   const toast = useToast();
-  const backendReady = isBackendConfigured();
 
   useEffect(() => {
-    if (window.location.hash === "#signup") setTab("signup");
+    const syncHash = () => {
+      const nextMode = window.location.hash === "#signup" ? "signup" : "signin";
+      setMode(nextMode);
+      setStep("email");
+    };
+    syncHash();
+    window.addEventListener("hashchange", syncHash);
+    let active = true;
+    void getSession().then((user) => {
+      if (active && user) {
+        window.location.replace(destinationAfterLogin(
+          new URLSearchParams(window.location.search).get("next"),
+          user.role,
+        ));
+      }
+    }).catch(() => { /* The form reports service errors when submitted. */ });
+    return () => {
+      active = false;
+      window.removeEventListener("hashchange", syncHash);
+    };
   }, []);
 
+  const nextPath = typeof window === "undefined"
+    ? null
+    : new URLSearchParams(window.location.search).get("next");
+  const safeNextPath = nextPath && /^\/(home|learn|admin)(\/|\?|$)/.test(nextPath) && !nextPath.includes("\\")
+    ? nextPath
+    : null;
+  const callbackURL = safeNextPath ?? "/home";
+  const loginHref = safeNextPath ? `/login?next=${encodeURIComponent(safeNextPath)}` : "/login";
   const inputClass =
     "mt-1 w-full rounded-xl border border-line bg-bg/50 px-3 py-2.5 text-base focus:border-primary focus:outline-none";
+  const divider = (
+    <div className="my-4 flex items-center gap-3 text-xs text-ink-muted">
+      <span className="h-px flex-1 bg-line" />
+      <span>ឬ</span>
+      <span className="h-px flex-1 bg-line" />
+    </div>
+  );
+  const googleButton = (
+    <button
+      type="button"
+      disabled={pending}
+      onClick={async () => {
+        if (pending) return;
+        setPending(true);
+        try {
+          await signInWithGoogle(callbackURL);
+        } catch (error) {
+          toast.error(authErrorMessage(error));
+          setPending(false);
+        }
+      }}
+      className="ui-btn flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 font-semibold text-ink hover:border-primary/40 disabled:cursor-wait disabled:opacity-60"
+    >
+      <span className="text-lg font-bold text-primary">G</span>
+      {mode === "signup" ? "ចុះឈ្មោះជាមួយ Google" : "ចូលជាមួយ Google"}
+    </button>
+  );
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">
@@ -49,7 +106,7 @@ export default function LoginPage() {
               <span className="mt-1 block text-gold">ជាមួយមិត្ត AI</span>
             </h2>
             <ul className="mt-8 space-y-3 text-sm text-white/70">
-              <li>មើលវីដេអូមេរៀន តាមកម្មវិធីសិក្សា</li>
+              <li>មើលវីដេអូ MoEYS តាមមេរៀន</li>
               <li>សួរ AI បើមានចំណុចមិនយល់</li>
               <li>ធ្វើតេស្ត មានការពន្យល់</li>
             </ul>
@@ -62,216 +119,291 @@ export default function LoginPage() {
               <Mascot size={64} onDark className="mascot-bob" />
             </div>
             <h1 className="text-center text-2xl font-bold text-primary">
-              {tab === "login" ? "ចូលគណនី" : "ចុះឈ្មោះ"}
+              {step.startsWith("reset")
+                ? "កំណត់ពាក្យសម្ងាត់ថ្មី"
+                : mode === "signup" ? "ចុះឈ្មោះ" : "ចូលគណនី"}
             </h1>
-            <p className="mt-1 text-center text-sm text-ink-muted">
-              {backendReady
-                ? "ចូលដោយអ៊ីមែល ឬសាកល្បងដោយមិនចាំបាច់គណនី"
-                : "សាកល្បងឥឡូវនេះ — មិនចាំបាច់បង្កើតគណនី"}
+            <p className="mb-5 mt-2 text-center text-sm text-ink-muted">
+              {step.startsWith("reset")
+                ? "បញ្ចូលអ៊ីមែល ដើម្បីទទួលលេខកូដ"
+                : mode === "signup"
+                  ? "បង្កើតគណនីសិស្សដោយប្រើអ៊ីមែល ឬ Google"
+                  : "ចូលដោយប្រើអ៊ីមែល ពាក្យសម្ងាត់ ឬ Google"}
             </p>
 
-            <div className="mt-7 flex flex-col gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  skipAs("student");
-                  router.replace(homePathForRole("student"));
-                }}
-                className="ui-btn min-h-11 rounded-xl bg-cta py-2.5 text-center font-semibold text-white hover:bg-cta-dark"
-              >
-                បន្តជាសិស្ស
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  skipAs("admin");
-                  router.replace(homePathForRole("admin"));
-                }}
-                className="ui-btn min-h-11 rounded-xl border border-primary/20 py-2.5 text-center font-semibold text-primary hover:bg-primary-light"
-              >
-                បន្តជា Admin
-              </button>
-            </div>
-
-            <div className="my-6 flex items-center gap-3 text-xs text-ink-muted">
-              <span className="h-px flex-1 bg-line" />
-              ឬប្រើគណនី
-              <span className="h-px flex-1 bg-line" />
-            </div>
-
-            <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl bg-bg p-1">
-              <button
-                type="button"
-                onClick={() => setTab("login")}
-                className={`ui-btn min-h-11 rounded-lg text-sm font-semibold ${
-                  tab === "login"
-                    ? "bg-surface text-primary shadow-sm"
-                    : "text-ink-muted hover:text-primary"
-                }`}
-              >
-                ចូល
-              </button>
-              <button
-                type="button"
-                onClick={() => setTab("signup")}
-                className={`ui-btn min-h-11 rounded-lg text-sm font-semibold ${
-                  tab === "signup"
-                    ? "bg-surface text-primary shadow-sm"
-                    : "text-ink-muted hover:text-primary"
-                }`}
-              >
-                ចុះឈ្មោះ
-              </button>
-            </div>
-
-            {tab === "login" ? (
-              <form
-                className="flex flex-col gap-4"
-                onSubmit={async (event) => {
-                  event.preventDefault();
-                  const data = new FormData(event.currentTarget);
-                  const email = String(data.get("email") ?? "").trim();
-                  const password = String(data.get("password") ?? "");
-                  if (!email || !password) {
-                    toast.error("សូមបំពេញអ៊ីមែល និងពាក្យសម្ងាត់។");
-                    return;
-                  }
-                  if (!backendReady) {
-                    toast.info(BACKEND_NOTICE);
-                    return;
-                  }
-                  setBusy(true);
-                  try {
-                    const { token, user } = await loginRemote(email, password);
-                    setSession(token, user);
-                    router.replace(homePathForRole(user.role));
-                  } catch (error) {
-                    toast.error(
-                      error instanceof ApiError ? error.message : "មិនអាចចូលបានទេ។",
-                    );
-                  } finally {
-                    setBusy(false);
-                  }
-                }}
-              >
-                <label className="text-sm font-medium">
-                  អ៊ីមែល
-                  <input
-                    type="email"
-                    name="email"
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                    className={inputClass}
-                  />
-                </label>
-                <label className="text-sm font-medium">
-                  ពាក្យសម្ងាត់
-                  <input
-                    type="password"
-                    name="password"
-                    autoComplete="current-password"
-                    placeholder="••••••••"
-                    className={inputClass}
-                  />
-                </label>
-                <button
-                  type="submit"
-                  disabled={busy}
-                  className="ui-btn min-h-11 rounded-xl bg-primary py-2.5 font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
+            {step === "email" ? (
+              <>
+                <form
+                  className="flex flex-col gap-4"
+                  onSubmit={async (event) => {
+                    event.preventDefault();
+                    if (pending) return;
+                    const data = new FormData(event.currentTarget);
+                    const nextName = String(data.get("name") ?? "").trim();
+                    const nextEmail = String(data.get("email") ?? "").trim().toLowerCase();
+                    if (mode === "signup" && !nextName) {
+                      toast.error("សូមបញ្ចូលឈ្មោះរបស់អ្នក។");
+                      return;
+                    }
+                    const password = String(data.get("password") ?? "");
+                    if (mode === "signup") {
+                      const confirm = String(data.get("confirm") ?? "");
+                      if (password !== confirm) {
+                        toast.error("ពាក្យសម្ងាត់ទាំងពីរមិនដូចគ្នាទេ។");
+                        return;
+                      }
+                      setPending(true);
+                      try {
+                        const user = await signup(nextEmail, password, nextName);
+                        toast.success(`សូមស្វាគមន៍ ${user.displayName || user.email}!`);
+                        window.location.replace(destinationAfterLogin(nextPath, user.role));
+                      } catch (error) {
+                        toast.error(authErrorMessage(error, true));
+                        setPending(false);
+                      }
+                      return;
+                    }
+                    setPending(true);
+                    try {
+                      const user = await login(nextEmail, password);
+                      toast.success(`សូមស្វាគមន៍ ${user.displayName || user.email}!`);
+                      window.location.replace(destinationAfterLogin(nextPath, user.role));
+                    } catch (error) {
+                      toast.error(authErrorMessage(error));
+                      setPending(false);
+                    }
+                  }}
                 >
-                  {busy ? "កំពុងចូល…" : "ចូល"}
-                </button>
-              </form>
+                  {mode === "signup" ? (
+                    <label className="text-sm font-medium">
+                      ឈ្មោះពេញ
+                      <input
+                        required
+                        maxLength={100}
+                        disabled={pending}
+                        type="text"
+                        name="name"
+                        autoComplete="name"
+                        placeholder="ឧ. Kim Kheang"
+                        className={inputClass}
+                      />
+                    </label>
+                  ) : null}
+                  <label className="text-sm font-medium">
+                    អ៊ីមែល
+                    <input
+                      required
+                      maxLength={254}
+                      disabled={pending}
+                      type="email"
+                      name="email"
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      className={inputClass}
+                    />
+                  </label>
+                  <label className="text-sm font-medium">
+                    ពាក្យសម្ងាត់
+                    <input
+                      required
+                      minLength={8}
+                      maxLength={128}
+                      disabled={pending}
+                      type="password"
+                      name="password"
+                      autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                      placeholder="យ៉ាងហោចណាស់ ៨ តួអក្សរ"
+                      className={inputClass}
+                    />
+                  </label>
+                  {mode === "signup" ? (
+                    <label className="text-sm font-medium">
+                      បញ្ជាក់ពាក្យសម្ងាត់
+                      <input
+                        required
+                        minLength={8}
+                        maxLength={128}
+                        disabled={pending}
+                        type="password"
+                        name="confirm"
+                        autoComplete="new-password"
+                        placeholder="យ៉ាងហោចណាស់ ៨ តួអក្សរ"
+                        className={inputClass}
+                      />
+                    </label>
+                  ) : null}
+                  <button
+                    type="submit"
+                    disabled={pending}
+                    aria-busy={pending}
+                    className="ui-btn min-h-11 rounded-xl bg-primary py-2.5 font-semibold text-white hover:bg-primary-dark disabled:cursor-wait disabled:opacity-60"
+                  >
+                    {pending ? mode === "signup" ? "កំពុងបង្កើត…" : "កំពុងចូល…" : mode === "signup" ? "បង្កើតគណនី" : "ចូលគណនី"}
+                  </button>
+                  {mode === "signin" ? (
+                    <button
+                      type="button"
+                      disabled={pending}
+                      onClick={() => setStep("reset-email")}
+                      className="ui-btn min-h-11 rounded-xl px-4 py-2.5 text-sm font-semibold text-primary hover:bg-primary/5 disabled:opacity-60"
+                    >
+                      ភ្លេចពាក្យសម្ងាត់?
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={pending}
+                      onClick={() => {
+                        window.history.replaceState(null, "", loginHref);
+                        setMode("signin");
+                        setStep("email");
+                      }}
+                      className="ui-btn flex min-h-11 items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold text-primary hover:bg-primary/5"
+                    >
+                      មានគណនីរួចហើយ?
+                    </button>
+                  )}
+                </form>
+                {divider}
+                {googleButton}
+              </>
             ) : (
-              <form
-                className="flex flex-col gap-4"
-                onSubmit={async (event) => {
-                  event.preventDefault();
-                  const data = new FormData(event.currentTarget);
-                  const displayName = String(data.get("displayName") ?? "").trim();
-                  const email = String(data.get("email") ?? "").trim();
-                  const password = String(data.get("password") ?? "");
-                  const confirm = String(data.get("confirm") ?? "");
-                  if (password !== confirm) {
-                    toast.error("ពាក្យសម្ងាត់ទាំងពីរមិនដូចគ្នាទេ។");
-                    return;
-                  }
-                  if (!email || !password) {
-                    toast.error("សូមបំពេញអ៊ីមែល និងពាក្យសម្ងាត់។");
-                    return;
-                  }
-                  if (!backendReady) {
-                    toast.info(BACKEND_NOTICE);
-                    return;
-                  }
-                  setBusy(true);
-                  try {
-                    const { token, user } = await signupRemote(
-                      email,
-                      password,
-                      displayName || undefined,
-                    );
-                    setSession(token, user);
-                    router.replace(homePathForRole(user.role));
-                  } catch (error) {
-                    toast.error(
-                      error instanceof ApiError
-                        ? error.message
-                        : "មិនអាចបង្កើតគណនីបានទេ។",
-                    );
-                  } finally {
-                    setBusy(false);
-                  }
-                }}
-              >
-                <label className="text-sm font-medium">
-                  ឈ្មោះ
-                  <input
-                    type="text"
-                    name="displayName"
-                    autoComplete="name"
-                    placeholder="ឈ្មោះសិស្ស"
-                    className={inputClass}
-                  />
-                </label>
-                <label className="text-sm font-medium">
-                  អ៊ីមែល
-                  <input
-                    type="email"
-                    name="email"
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                    className={inputClass}
-                  />
-                </label>
-                <label className="text-sm font-medium">
-                  ពាក្យសម្ងាត់
-                  <input
-                    type="password"
-                    name="password"
-                    autoComplete="new-password"
-                    placeholder="••••••••"
-                    className={inputClass}
-                  />
-                </label>
-                <label className="text-sm font-medium">
-                  បញ្ជាក់ពាក្យសម្ងាត់
-                  <input
-                    type="password"
-                    name="confirm"
-                    autoComplete="new-password"
-                    placeholder="••••••••"
-                    className={inputClass}
-                  />
-                </label>
-                <button
-                  type="submit"
-                  disabled={busy}
-                  className="ui-btn min-h-11 rounded-xl bg-primary py-2.5 font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
+              step === "reset-email" ? (
+                <form
+                  className="flex flex-col gap-4"
+                  onSubmit={async (event) => {
+                    event.preventDefault();
+                    if (pending) return;
+                    const data = new FormData(event.currentTarget);
+                    const nextEmail = String(data.get("email") ?? "").trim().toLowerCase();
+                    setPending(true);
+                    try {
+                      await sendPasswordResetCode(nextEmail);
+                      setEmail(nextEmail);
+                      setStep("reset-code");
+                      toast.success("បានផ្ញើលេខកូដកំណត់ពាក្យសម្ងាត់ថ្មី។");
+                    } catch (error) {
+                      toast.error(authErrorMessage(error));
+                    } finally {
+                      setPending(false);
+                    }
+                  }}
                 >
-                  {busy ? "កំពុងបង្កើត…" : "បង្កើតគណនី"}
-                </button>
-              </form>
+                  <label className="text-sm font-medium">
+                    អ៊ីមែល
+                    <input
+                      required
+                      maxLength={254}
+                      disabled={pending}
+                      type="email"
+                      name="email"
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      className={inputClass}
+                    />
+                  </label>
+                  <button
+                    type="submit"
+                    disabled={pending}
+                    aria-busy={pending}
+                    className="ui-btn min-h-11 rounded-xl bg-primary py-2.5 font-semibold text-white hover:bg-primary-dark disabled:cursor-wait disabled:opacity-60"
+                  >
+                    {pending ? "កំពុងផ្ញើ…" : "ផ្ញើលេខកូដ"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => setStep("email")}
+                    className="ui-btn min-h-11 rounded-xl border border-line px-4 py-2.5 font-semibold text-primary hover:border-primary/40 disabled:opacity-60"
+                  >
+                    ត្រឡប់ទៅចូលគណនី
+                  </button>
+                </form>
+              ) : (
+                <form
+                  className="flex flex-col gap-4"
+                  onSubmit={async (event) => {
+                    event.preventDefault();
+                    if (pending) return;
+                    const data = new FormData(event.currentTarget);
+                    const password = String(data.get("password") ?? "");
+                    const confirm = String(data.get("confirm") ?? "");
+                    if (password !== confirm) {
+                      toast.error("ពាក្យសម្ងាត់ទាំងពីរមិនដូចគ្នាទេ។");
+                      return;
+                    }
+                    setPending(true);
+                    try {
+                      await resetPassword(email, String(data.get("code") ?? ""), password);
+                      toast.success("បានកំណត់ពាក្យសម្ងាត់ថ្មី។ សូមចូលគណនីម្ដងទៀត។");
+                      setStep("email");
+                    } catch (error) {
+                      toast.error(authErrorMessage(error));
+                      setPending(false);
+                    }
+                  }}
+                >
+                  <label className="text-sm font-medium">
+                    លេខកូដ
+                    <input
+                      required
+                      inputMode="numeric"
+                      pattern="[0-9]{6}"
+                      maxLength={6}
+                      disabled={pending}
+                      type="text"
+                      name="code"
+                      autoComplete="one-time-code"
+                      placeholder="123456"
+                      className={inputClass}
+                    />
+                  </label>
+                  <label className="text-sm font-medium">
+                    ពាក្យសម្ងាត់ថ្មី
+                    <input
+                      required
+                      minLength={8}
+                      maxLength={128}
+                      disabled={pending}
+                      type="password"
+                      name="password"
+                      autoComplete="new-password"
+                      placeholder="យ៉ាងហោចណាស់ ៨ តួអក្សរ"
+                      className={inputClass}
+                    />
+                  </label>
+                  <label className="text-sm font-medium">
+                    បញ្ជាក់ពាក្យសម្ងាត់ថ្មី
+                    <input
+                      required
+                      minLength={8}
+                      maxLength={128}
+                      disabled={pending}
+                      type="password"
+                      name="confirm"
+                      autoComplete="new-password"
+                      placeholder="យ៉ាងហោចណាស់ ៨ តួអក្សរ"
+                      className={inputClass}
+                    />
+                  </label>
+                  <button
+                    type="submit"
+                    disabled={pending}
+                    aria-busy={pending}
+                    className="ui-btn min-h-11 rounded-xl bg-primary py-2.5 font-semibold text-white hover:bg-primary-dark disabled:cursor-wait disabled:opacity-60"
+                  >
+                    {pending ? "កំពុងរក្សាទុក…" : "រក្សាទុកពាក្យសម្ងាត់ថ្មី"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => setStep("reset-email")}
+                    className="ui-btn min-h-11 rounded-xl border border-line px-4 py-2.5 font-semibold text-primary hover:border-primary/40 disabled:opacity-60"
+                  >
+                    ផ្លាស់ប្តូរអ៊ីមែល
+                  </button>
+                </form>
+              )
             )}
           </div>
         </main>

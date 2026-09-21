@@ -94,3 +94,11 @@ export interface GeneratedChapterContent {
   summary: string;
   questions: Array<Pick<Question, "prompt" | "options" | "correctIndex" | "explanation">>;
 }
+
+export interface User {
+  id: string;
+  email: string;
+  role: UserRole;
+  /** Khmer display name shown in the navbar */
+  displayName: string;
+}
