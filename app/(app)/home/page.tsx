@@ -1,6 +1,7 @@
 import ContinueCard from "@/components/ContinueCard";
 import HomeHero from "@/components/HomeHero";
 import PageTitle from "@/components/PageTitle";
+import TextbookCover from "@/components/TextbookCover";
 import { GRADES, getApprovedChapters } from "@/lib/api";
 import { toKhmerNumber } from "@/lib/format";
 import Link from "next/link";
@@ -25,27 +26,41 @@ export default async function HomePage() {
         </p>
         <div className="stagger mt-6 grid gap-4 sm:grid-cols-2">
           {mathChapter ? (
-            <Link href="/learn/10/math" className="ui-card group p-5 sm:p-6">
-              <p className="text-xs font-semibold text-gold">ថ្នាក់ទី១០</p>
-              <p className="mt-2 text-xl font-bold text-primary group-hover:text-primary-dark">
-                គណិតវិទ្យា
-              </p>
-              <p className="mt-1 text-sm text-ink-muted">
-                មេរៀនទី{toKhmerNumber(mathChapter.sortOrder)} · {mathChapter.title}
-              </p>
-              <p className="mt-4 text-sm font-semibold text-cta">ចូលរៀន →</p>
+            <Link href="/learn/10/math" className="ui-card group flex items-center gap-4 p-5 sm:p-6">
+              <TextbookCover
+                grade={10}
+                subject="math"
+                subjectNameKm="គណិតវិទ្យា"
+              />
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-gold">ថ្នាក់ទី១០</p>
+                <p className="mt-1 text-xl font-bold text-primary group-hover:text-primary-dark">
+                  គណិតវិទ្យា
+                </p>
+                <p className="mt-1 text-sm text-ink-muted">
+                  មេរៀនទី{toKhmerNumber(mathChapter.sortOrder)} · {mathChapter.title}
+                </p>
+                <p className="mt-3 text-sm font-semibold text-cta">ចូលរៀន →</p>
+              </div>
             </Link>
           ) : null}
           {historyChapter ? (
-            <Link href="/learn/10/history" className="ui-card group p-5 sm:p-6">
-              <p className="text-xs font-semibold text-gold">ថ្នាក់ទី១០</p>
-              <p className="mt-2 text-xl font-bold text-primary group-hover:text-primary-dark">
-                ប្រវត្តិវិទ្យា
-              </p>
-              <p className="mt-1 text-sm text-ink-muted">
-                មេរៀនទី{toKhmerNumber(historyChapter.sortOrder)} · {historyChapter.title}
-              </p>
-              <p className="mt-4 text-sm font-semibold text-cta">ចូលរៀន →</p>
+            <Link href="/learn/10/history" className="ui-card group flex items-center gap-4 p-5 sm:p-6">
+              <TextbookCover
+                grade={10}
+                subject="history"
+                subjectNameKm="ប្រវត្តិវិទ្យា"
+              />
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-gold">ថ្នាក់ទី១០</p>
+                <p className="mt-1 text-xl font-bold text-primary group-hover:text-primary-dark">
+                  ប្រវត្តិវិទ្យា
+                </p>
+                <p className="mt-1 text-sm text-ink-muted">
+                  មេរៀនទី{toKhmerNumber(historyChapter.sortOrder)} · {historyChapter.title}
+                </p>
+                <p className="mt-3 text-sm font-semibold text-cta">ចូលរៀន →</p>
+              </div>
             </Link>
           ) : null}
         </div>

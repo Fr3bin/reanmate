@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import BackLink from "@/components/BackLink";
 import Breadcrumb from "@/components/Breadcrumb";
 import PageTitle from "@/components/PageTitle";
+import TextbookCover from "@/components/TextbookCover";
 import { SUBJECTS } from "@/lib/api";
 import { getMergedApproved } from "@/lib/catalog-overlay";
 import { toKhmerNumber } from "@/lib/format";
@@ -51,15 +52,11 @@ export default function GradeSubjectPicker({
               href={`/learn/${grade}/${subject.id}`}
               className="group ui-card flex items-center gap-4 p-5 sm:gap-5 sm:p-6"
             >
-              <span
-                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-lg font-semibold sm:h-14 sm:w-14 ${
-                  subject.id === "math"
-                    ? "bg-primary-light text-primary"
-                    : "bg-section text-primary"
-                }`}
-              >
-                {subject.id === "math" ? "គ" : "ប"}
-              </span>
+              <TextbookCover
+                grade={grade}
+                subject={subject.id}
+                subjectNameKm={subject.nameKm}
+              />
               <div className="min-w-0 flex-1">
                 <p className="text-lg font-bold text-ink group-hover:text-primary">
                   {subject.nameKm}
