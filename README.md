@@ -59,6 +59,41 @@ Email verification is not enabled; the existing requirements specify
 email/password auth without a required email verification step. Self-service
 password recovery uses a one-time email code. Do not edit password hashes by hand.
 
+## AI chat (ReanMate study buddy)
+
+`GET/POST /chapters/:id/messages` implement the ReanMate chat from
+`API-CONTRACT.md` §3, backed by **Vertex AI** (Gemini) on Google Cloud.
+Chat history is stored per user per chapter in the `chatmessages` collection.
+Each reply is grounded in that chapter's `summary` and `sourceText`; the model
+is instructed to say it does not know rather than invent textbook facts.
+
+Set up once in Google Cloud Console:
+
+1. Create or pick a GCP project and note its **Project ID**.
+2. Enable the **Vertex AI API** for that project.
+3. Create a service account (IAM & Admin → Service Accounts) and grant it the
+   **Vertex AI User** role.
+4. Create a JSON key for that service account and download it. Keep it out of
+   the repo — it matches the `*service-account*.json` / `gcp-key.json`
+   patterns already in `.gitignore`.
+
+Then in `.env`:
+
+```sh
+GOOGLE_CLOUD_PROJECT=your-project-id
+GOOGLE_CLOUD_LOCATION=us-central1
+GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/service-account.json
+```
+
+For local development without a downloaded key, run
+`gcloud auth application-default login` instead and leave
+`GOOGLE_APPLICATION_CREDENTIALS` unset — the Vertex AI client picks up your
+logged-in `gcloud` credentials automatically.
+
+If Vertex AI is unreachable or misconfigured, the chat endpoint returns
+`502 Bad Gateway` with a Khmer error message; it does not crash the app or
+block chapters, quizzes, or auth (NFR-REL-02).
+
 ## Grant admin access
 
 First register the account through the ReanMate signup form. An operator with the

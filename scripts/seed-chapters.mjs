@@ -7,7 +7,7 @@ if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is required.');
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, '../..');
-const chaptersPath = resolve(repoRoot, 'frontend/content/chapters.json');
+const chaptersPath = resolve(repoRoot, 'reanmate-frontend/content/chapters.json');
 const chapters = JSON.parse(await readFile(chaptersPath, 'utf8'));
 
 const client = new MongoClient(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 10000 });

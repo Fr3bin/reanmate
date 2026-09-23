@@ -5,5 +5,6 @@ import { ChaptersService } from './chapters.service.js';
 @Module({
   controllers: [ChaptersController],
   providers: [ChaptersService],
+  exports: [ChaptersService],
 })
 export class ChaptersModule {}

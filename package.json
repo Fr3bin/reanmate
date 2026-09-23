@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@better-auth/mongo-adapter": "1.7.3",
+    "@google/genai": "^2.22.0",
     "@nestjs/common": "^12.0.1",
     "@nestjs/config": "^12.0.0",
     "@nestjs/core": "^12.0.1",
